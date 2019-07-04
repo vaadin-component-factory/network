@@ -17,36 +17,58 @@ package com.vaadin.componentfactory.model;
  * #L%
  */
 
-import com.vaadin.componentfactory.Network;
 import com.vaadin.componentfactory.converter.NetworkConverter;
 import com.vaadin.flow.component.JsonSerializable;
+import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Node displayed on the network graph
  */
-public class NetworkComponent extends AbstractNetworkComponent<NetworkNode,NetworkEdge> {
+public abstract class AbstractNetworkComponent<TNode extends NetworkNode, TEdge extends NetworkEdge> extends NetworkNode {
 
+    private List<TNode> nodes = new ArrayList<>();
+
+    private List<TEdge> edges = new ArrayList<>();
+
+    public List<TNode> getNodes() {
+        return nodes;
+    }
+
+    public void setNodes(List<TNode> nodes) {
+        this.nodes = nodes;
+    }
+
+    public List<TEdge> getEdges() {
+        return edges;
+    }
+
+    public void setEdges(List<TEdge> edges) {
+        this.edges = edges;
+    }
+
+/*
     @Override
     public JsonObject toJson() {
         JsonObject jsonObject = super.toJson();
 
         // put nodes and edges
-        jsonObject.put("nodes", NetworkConverter.convertNetworkNodeListToJsonArray(getNodes()));
-        jsonObject.put("edges", NetworkConverter.convertNetworkEdgeListToJsonArray(getEdges()));
+      //  jsonObject.put("nodes", NetworkConverter.convertNetworkNodeListToJsonArray(nodes));
+     //   jsonObject.put("edges", NetworkConverter.convertNetworkEdgeListToJsonArray(edges));
         return jsonObject;
     }
-
 
     @Override
     public JsonSerializable readJson(JsonObject value) {
         super.readJson(value);
-        setNodes(NetworkConverter.convertJsonToNetworkNodeList(value.getArray("nodes"), NetworkNode.class));
-        setEdges(NetworkConverter.convertJsonToNetworkEdgeList(value.getArray("edges"), NetworkEdge.class));
+     //   setNodes(NetworkConverter.convertJsonToNetworkNodeList(value.getArray("nodes")));
+     //   setEdges(NetworkConverter.convertJsonToNetworkEdgeList(value.getArray("edges")));
         //
         return this;
-    }
+    }*/
 }

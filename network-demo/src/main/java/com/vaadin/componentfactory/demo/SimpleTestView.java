@@ -1,6 +1,7 @@
 package com.vaadin.componentfactory.demo;
 
 import com.vaadin.componentfactory.Network;
+import com.vaadin.componentfactory.model.NetworkComponent;
 import com.vaadin.componentfactory.model.NetworkEdge;
 import com.vaadin.componentfactory.model.NetworkNode;
 import com.vaadin.flow.component.button.Button;
@@ -11,7 +12,7 @@ import com.vaadin.flow.router.Route;
 @Route("simple")
 public class SimpleTestView extends VerticalLayout {
 
-    private Network network = new Network();
+    private Network<NetworkComponent,NetworkNode,NetworkEdge> network = new Network<>(NetworkComponent.class,NetworkNode.class,NetworkEdge.class);
 
     public SimpleTestView() {
         Button checkNodesListButton = new Button("check nodes list", e -> {

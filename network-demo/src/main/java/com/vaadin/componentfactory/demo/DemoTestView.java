@@ -1,6 +1,7 @@
 package com.vaadin.componentfactory.demo;
 
 import com.vaadin.componentfactory.Network;
+import com.vaadin.componentfactory.model.AbstractNetworkComponent;
 import com.vaadin.componentfactory.model.NetworkEdge;
 import com.vaadin.componentfactory.model.NetworkNode;
 import com.vaadin.flow.component.accordion.Accordion;
@@ -16,12 +17,10 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
 
-import java.util.ArrayList;
-
 @Route("")
 public class DemoTestView extends VerticalLayout {
 
-    private Network network = new Network();
+    private Network<AbstractNetworkComponent<NetworkNode,NetworkEdge>,NetworkNode, NetworkEdge> network = new Network<AbstractNetworkComponent<NetworkNode,NetworkEdge>, NetworkNode, NetworkEdge>(null,NetworkNode.class, NetworkEdge.class);
 
     // simple controls - scale and reset network
     private Button scaleButton = new Button("get scale", e -> showScaleAction());

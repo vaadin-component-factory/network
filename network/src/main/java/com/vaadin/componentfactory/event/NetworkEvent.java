@@ -65,43 +65,43 @@ public class NetworkEvent {
     }
 
     @DomEvent("vcf-network-new-nodes")
-    public static class NetworkNewNodesEvent extends ComponentEvent<Network> {
-        private List<NetworkNode> networkNodes;
+    public static class NetworkNewNodesEvent<TNode extends NetworkNode> extends ComponentEvent<Network> {
+        private List<TNode> networkNodes;
 
-        public NetworkNewNodesEvent(Network source, boolean fromClient,
+        public NetworkNewNodesEvent(Network<?, TNode, ?> source, boolean fromClient,
                                        @EventData("event.detail.items") JsonValue items,
                                        @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
             super(source, fromClient);
 
-            networkNodes = NetworkConverter.convertJsonToNetworkNodeList(items);
+            networkNodes = source.getNetworkConverter().convertJsonToNetworkNodeList(items);
         }
 
-        public List<NetworkNode> getNetworkNodes() {
+        public List<TNode> getNetworkNodes() {
             return networkNodes;
         }
 
-        public void setNetworkNodes(List<NetworkNode> networkNodes) {
+        public void setNetworkNodes(List<TNode> networkNodes) {
             this.networkNodes = networkNodes;
         }
     }
 
 
     @DomEvent("vcf-network-new-edges")
-    public static class NetworkNewEdgesEvent extends ComponentEvent<Network> {
-        private List<NetworkEdge> networkEdges;
+    public static class NetworkNewEdgesEvent<TEdge extends NetworkEdge> extends ComponentEvent<Network> {
+        private List<TEdge> networkEdges;
 
-        public NetworkNewEdgesEvent(Network source, boolean fromClient,
+        public NetworkNewEdgesEvent(Network<?,?,TEdge> source, boolean fromClient,
                                     @EventData("event.detail.items") JsonValue items,
                                     @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
             super(source, fromClient);
-            networkEdges = NetworkConverter.convertJsonToNetworkEdgeList(items);
+            networkEdges = source.getNetworkConverter().convertJsonToNetworkEdgeList(items);
         }
 
-        public List<NetworkEdge> getNetworkEdges() {
+        public List<TEdge> getNetworkEdges() {
             return networkEdges;
         }
 
-        public void setNetworkEdges(List<NetworkEdge> networkEdges) {
+        public void setNetworkEdges(List<TEdge> networkEdges) {
             this.networkEdges = networkEdges;
         }
     }
@@ -116,7 +116,7 @@ public class NetworkEvent {
                                     @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
             super(source, fromClient);
 
-            networkNodes = NetworkConverter.convertJsonToNetworkNodeList(items);
+            networkNodes = source.getNetworkConverter().convertJsonToNetworkNodeList(items);
         }
 
         public NetworkAfterNewNodesEvent(Network source, boolean fromClient,
@@ -142,7 +142,7 @@ public class NetworkEvent {
                                     @EventData("event.detail.items") JsonValue items,
                                     @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
             super(source, fromClient);
-            networkEdges = NetworkConverter.convertJsonToNetworkEdgeList(items);
+            networkEdges = source.getNetworkConverter().convertJsonToNetworkEdgeList(items);
         }
 
         public NetworkAfterNewEdgesEvent(Network source, boolean fromClient,
@@ -210,7 +210,7 @@ public class NetworkEvent {
 
         public NetworkAfterDeleteNodesEvent(Network source, boolean fromClient, @EventData("event.detail.ids") JsonValue ids) {
             super(source, fromClient);
-            networkNodesId = NetworkConverter. convertJsonToIdList(ids);
+            networkNodesId = NetworkConverter.convertJsonToIdList(ids);
         }
 
         public List<String> getNetworkNodesId() {
@@ -229,7 +229,7 @@ public class NetworkEvent {
 
         public NetworkAfterDeleteEdgesEvent(Network source, boolean fromClient, @EventData("event.detail.ids") JsonValue ids) {
             super(source, fromClient);
-            networkEdgesId = NetworkConverter. convertJsonToIdList(ids);
+            networkEdgesId = NetworkConverter.convertJsonToIdList(ids);
         }
 
         public List<String> getNetworkEdgesId() {

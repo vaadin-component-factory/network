@@ -19,36 +19,54 @@ package com.vaadin.componentfactory;
 
 import com.vaadin.componentfactory.converter.NetworkConverter;
 import com.vaadin.componentfactory.event.NetworkEvent;
-import com.vaadin.componentfactory.model.NetworkComponent;
+import com.vaadin.componentfactory.model.AbstractNetworkComponent;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.componentfactory.model.NetworkEdge;
 import com.vaadin.componentfactory.model.NetworkNode;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Tag("vcf-network")
 @JsModule("./src/vcf-network.js")
-public class Network extends Component implements HasSize, HasTheme {
+public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TNode extends NetworkNode,TEdge extends NetworkEdge> extends Component implements HasSize, HasTheme {
 
-    private NetworkComponent rootData = new NetworkComponent();
+    private TComponent rootData;
 
-    private List<NetworkNode> selectedNodes = new ArrayList<>();
+    private List<TNode> selectedNodes = new ArrayList<>();
     private List<NetworkEdge> selectedEdges = new ArrayList<>();
 
-    public Network() {
+    private final Class<TNode> nodeClass;
+    private final Class<TEdge> edgeClass;
+    private final Class<TComponent> componentClass;
+
+    private final NetworkConverter<TComponent, TNode, TEdge> networkConverter;
+
+    public Network(Class<TComponent> componentClass,Class<TNode> nodeClass, Class<TEdge> edgeClass) {
+        this.nodeClass = nodeClass;
+        this.edgeClass = edgeClass;
+        this.componentClass = componentClass;
+        try {
+            rootData = componentClass.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        networkConverter = new NetworkConverter<>(this.componentClass, this.nodeClass, this.edgeClass);
         registerHandlers();
     }
 
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkDeleteNodesEvent>> deleteNodesListeners = new LinkedHashSet<>();
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkDeleteEdgesEvent>> deleteEdgesListeners = new LinkedHashSet<>();
-    private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent>> newNodesListeners = new LinkedHashSet<>();
-    private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewEdgesEvent>> newEdgesListeners = new LinkedHashSet<>();
+    private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent<TNode>>> newNodesListeners = new LinkedHashSet<>();
+    private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewEdgesEvent<TEdge>>> newEdgesListeners = new LinkedHashSet<>();
     private final Set<ComponentEventListener<NetworkEvent.NetworkNewComponentEvent>> newComponentListeners = new LinkedHashSet<>();
 
+    public NetworkConverter<TComponent, TNode, TEdge> getNetworkConverter() {
+        return networkConverter;
+    }
 
     private void registerHandlers() {
 
@@ -61,8 +79,8 @@ public class Network extends Component implements HasSize, HasTheme {
                                 confirmed &= listener.onConfirmEvent(e);
                             }
                             if (confirmed) {
-                                List<NetworkNode> nodeToRemove = new ArrayList<>();
-                                for (NetworkNode node : rootData.getNodes()) {
+                                List<TNode> nodeToRemove = new ArrayList<>();
+                                for (TNode node : rootData.getNodes()) {
                                     if (e.getNetworkNodesId().contains(node.getId())) {
                                         nodeToRemove.add(node);
                                     }
@@ -88,8 +106,8 @@ public class Network extends Component implements HasSize, HasTheme {
                                 confirmed &= listener.onConfirmEvent(e);
                             }
                             if (confirmed) {
-                                List<NetworkEdge> edgeToRemove = new ArrayList<>();
-                                for (NetworkEdge edge : rootData.getEdges()) {
+                                List<TEdge> edgeToRemove = new ArrayList<>();
+                                for (TEdge edge : rootData.getEdges()) {
                                     if (e.getNetworkEdgesId().contains(edge.getId())) {
                                         edgeToRemove.add(edge);
                                     }
@@ -107,18 +125,18 @@ public class Network extends Component implements HasSize, HasTheme {
         );
 
 
-        ComponentUtil.addListener(this, NetworkEvent.NetworkNewNodesEvent.class,
-                ((ComponentEventListener<NetworkEvent.NetworkNewNodesEvent>) e -> {
+        ComponentUtil.addListener(this, NetworkEvent.NetworkNewNodesEvent.class,(ComponentEventListener)
+                ((ComponentEventListener<NetworkEvent.NetworkNewNodesEvent<TNode>>) e -> {
                     if (!e.getNetworkNodes().isEmpty()) {
                         try {
                             boolean confirmed = true;
-                            for (NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent> listener : newNodesListeners) {
+                            for (NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent<TNode>> listener : newNodesListeners) {
                                 confirmed &= listener.onConfirmEvent(e);
                             }
                             if (confirmed) {
                                 rootData.getNodes().addAll(e.getNetworkNodes());
                                 // refresh the client side
-                                getElement().callJsFunction("confirmAddNodes", NetworkConverter.convertNetworkNodeListToJsonArray(e.getNetworkNodes()));
+                                getElement().callJsFunction("confirmAddNodes", networkConverter.convertNetworkNodeListToJsonArray(e.getNetworkNodes()));
                             }
                         } catch (Exception exc ) {
                             exc.printStackTrace();
@@ -130,18 +148,18 @@ public class Network extends Component implements HasSize, HasTheme {
 
 
 
-        ComponentUtil.addListener(this, NetworkEvent.NetworkNewEdgesEvent.class,
-                ((ComponentEventListener<NetworkEvent.NetworkNewEdgesEvent>) e -> {
+        ComponentUtil.addListener(this, NetworkEvent.NetworkNewEdgesEvent.class,(ComponentEventListener)
+                ((ComponentEventListener<NetworkEvent.NetworkNewEdgesEvent<TEdge>>) e -> {
                     if (!e.getNetworkEdges().isEmpty()) {
                         try {
                             boolean confirmed = true;
-                            for (NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewEdgesEvent> listener : newEdgesListeners) {
+                            for (NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewEdgesEvent<TEdge>> listener : newEdgesListeners) {
                                 confirmed &= listener.onConfirmEvent(e);
                             }
                             if (confirmed) {
                                 rootData.getEdges().addAll(e.getNetworkEdges());
                                 // refresh the client side
-                                getElement().callJsFunction("confirmAddEdges", NetworkConverter.convertNetworkEdgeListToJsonArray(e.getNetworkEdges()));
+                                getElement().callJsFunction("confirmAddEdges", networkConverter.convertNetworkEdgeListToJsonArray(e.getNetworkEdges()));
                             }
                         } catch (Exception exc ) {
                             exc.printStackTrace();
@@ -168,11 +186,11 @@ public class Network extends Component implements HasSize, HasTheme {
         return () -> deleteEdgesListeners.remove(listener);
     }
 
-    public Registration addNewNodesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent> listener) {
+    public Registration addNewNodesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent<TNode>> listener) {
         newNodesListeners.add(listener);
         return () -> newNodesListeners.remove(listener);
     }
-    public Registration addNewEdgesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewEdgesEvent> listener) {
+    public Registration addNewEdgesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewEdgesEvent<TEdge>> listener) {
         newEdgesListeners.add(listener);
         return () -> newEdgesListeners.remove(listener);
     }
@@ -198,7 +216,7 @@ public class Network extends Component implements HasSize, HasTheme {
         return getElement().getProperty("scale", 1.33);
     }
 
-    public List<NetworkNode> getNodes() {
+    public List<TNode> getNodes() {
         return rootData.getNodes();
     }
     /**
@@ -206,28 +224,28 @@ public class Network extends Component implements HasSize, HasTheme {
      *
      * @param node the node to add
      */
-    public void addNode(NetworkNode node){
-        List<NetworkNode> nodes = new ArrayList<>();
+    public void addNode(TNode node){
+        List<TNode> nodes = new ArrayList<>();
         nodes.add(node);
         addNodes(nodes);
     }
 
-    public void addNodes(List<NetworkNode> networkNodes){
+    public void addNodes(List<TNode> networkNodes){
         rootData.getNodes().addAll(networkNodes);
-        getElement().callJsFunction("confirmAddNodes", NetworkConverter.convertNetworkNodeListToJsonArray(networkNodes));
+        getElement().callJsFunction("confirmAddNodes", networkConverter.convertNetworkNodeListToJsonArray(networkNodes));
     }
 
     // Call vcf-network-delete
-    public void deleteNode(NetworkNode node){
-        List<NetworkNode> nodes = new ArrayList<>();
+    public void deleteNode(TNode node){
+        List<TNode> nodes = new ArrayList<>();
         nodes.add(node);
         deleteNodes(nodes);
     }
 
     // duplicate the client side logic into this function
-    public void deleteNodes(List<NetworkNode> nodes){
+    public void deleteNodes(List<TNode> nodes){
         rootData.getNodes().removeAll(nodes);
-        getElement().callJsFunction("confirmDeleteNodes", NetworkConverter.convertNetworkNodeListToJsonArrayOfIds(nodes));
+        getElement().callJsFunction("confirmDeleteNodes", networkConverter.convertNetworkNodeListToJsonArrayOfIds(nodes));
     }
 
     /**
@@ -235,7 +253,7 @@ public class Network extends Component implements HasSize, HasTheme {
      *
      * @param node node to be updated
      */
-    public void updateNode(NetworkNode node) {
+    public void updateNode(TNode node) {
         getElement().callJsFunction("updateNode", node.toJson());
     }
 
@@ -245,15 +263,15 @@ public class Network extends Component implements HasSize, HasTheme {
      * @param edge edge to add
      */
 
-    public void addEdge(NetworkEdge edge){
-        List<NetworkEdge> edges = new ArrayList<>();
+    public void addEdge(TEdge edge){
+        List<TEdge> edges = new ArrayList<>();
         edges.add(edge);
         addEdges(edges);
     }
 
-    public void addEdges(List<NetworkEdge> networkEdges){
+    public void addEdges(List<TEdge> networkEdges){
         rootData.getEdges().addAll(networkEdges);
-        getElement().callJsFunction("confirmAddEdges", NetworkConverter.convertNetworkEdgeListToJsonArray(networkEdges));
+        getElement().callJsFunction("confirmAddEdges", networkConverter.convertNetworkEdgeListToJsonArray(networkEdges));
     }
 
     /**
@@ -261,16 +279,16 @@ public class Network extends Component implements HasSize, HasTheme {
      *
      * @param edge edge to delete
      */
-    public void deleteEdge(NetworkEdge edge){
-        List<NetworkEdge> edges = new ArrayList<>();
+    public void deleteEdge(TEdge edge){
+        List<TEdge> edges = new ArrayList<>();
         edges.add(edge);
         deleteEdges(edges);
     }
 
     // duplicate the client side logic into this function
-    public void deleteEdges(List<NetworkEdge> edges){
+    public void deleteEdges(List<TEdge> edges){
         rootData.getEdges().removeAll(edges);
-        getElement().callJsFunction("confirmDeleteEdges", NetworkConverter.convertNetworkEdgeListToJsonArrayOfIds(edges));
+        getElement().callJsFunction("confirmDeleteEdges", networkConverter.convertNetworkEdgeListToJsonArrayOfIds(edges));
     }
     /**
      * Create a component with all selected nodes
@@ -278,11 +296,11 @@ public class Network extends Component implements HasSize, HasTheme {
      *
      * @param nodes list of nodes
      */
-    public void createComponent(List<NetworkNode> nodes) {
+    public void createComponent(List<TNode> nodes) {
         // getElement().callJsFunction("select", NetworkConverter.convertNetworkNodeListToJsonArrayOfIds(nodes));
     }
 
-    public List<NetworkEdge> getEdges() {
+    public List<TEdge> getEdges() {
         return rootData.getEdges();
     }
 
@@ -292,8 +310,8 @@ public class Network extends Component implements HasSize, HasTheme {
      * @param networkNodes list of network nodes
      * @param networkEdges list of network edges
      */
-    public void select(List<NetworkNode> networkNodes, List<NetworkEdge> networkEdges){
-        getElement().callJsFunction("select", NetworkConverter.convertNetworkNodeListToJsonArrayOfIds(networkNodes), NetworkConverter.convertNetworkEdgeListToJsonArrayOfIds(networkEdges));
+    public void select(List<TNode> networkNodes, List<TEdge> networkEdges){
+        getElement().callJsFunction("select", networkConverter.convertNetworkNodeListToJsonArrayOfIds(networkNodes), networkConverter.convertNetworkEdgeListToJsonArrayOfIds(networkEdges));
     }
     /**
      * Adds a selection listener to this component.
@@ -306,7 +324,7 @@ public class Network extends Component implements HasSize, HasTheme {
         return addListener(NetworkEvent.NetworkSelectionEvent.class, listener);
     }
 
-    public NetworkComponent getRootData() {
+    public AbstractNetworkComponent getRootData() {
         return rootData;
     }
 }
