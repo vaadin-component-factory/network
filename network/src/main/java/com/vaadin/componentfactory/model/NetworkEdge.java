@@ -22,31 +22,27 @@ import com.vaadin.flow.component.JsonSerializable;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import java.util.UUID;
+
 /**
  * link between 2 nodes
  */
 public class NetworkEdge implements JsonSerializable {
 
-    private String id;
+    private UUID id;
     private String from;
     private String to;
 
 
-    /**
-     *
-     *
-     * @return id of the edge
-     */
     public String getId() {
-        return id;
+        if (id == null){
+            id = UUID.randomUUID();
+        }
+        return id.toString();
     }
 
-    /**
-     *
-     * @param id id of the edge
-     */
     public void setId(String id) {
-        this.id = id;
+        this.id = UUID.fromString(id);
     }
 
     /**
@@ -98,7 +94,7 @@ public class NetworkEdge implements JsonSerializable {
     @Override
     public JsonSerializable readJson(JsonObject value) {
         if (value.hasKey("id")) {
-            id = value.getString("id");
+            setId(value.getString("id"));
         }
         setFrom(value.getString("from"));
         setTo(value.getString("to"));

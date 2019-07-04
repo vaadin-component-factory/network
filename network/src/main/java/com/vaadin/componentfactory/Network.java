@@ -62,12 +62,16 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkDeleteEdgesEvent>> deleteEdgesListeners = new LinkedHashSet<>();
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent<TNode>>> newNodesListeners = new LinkedHashSet<>();
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewEdgesEvent<TEdge>>> newEdgesListeners = new LinkedHashSet<>();
+    private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode>>> updateNodesListeners = new LinkedHashSet<>();
+    private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateEdgesEvent<TEdge>>> updateEdgesListeners = new LinkedHashSet<>();
     private final Set<ComponentEventListener<NetworkEvent.NetworkNewComponentEvent>> newComponentListeners = new LinkedHashSet<>();
+
 
     public NetworkConverter<TComponent, TNode, TEdge> getNetworkConverter() {
         return networkConverter;
     }
 
+    @SuppressWarnings("unchecked")
     private void registerHandlers() {
 
         ComponentUtil.addListener(this, NetworkEvent.NetworkDeleteNodesEvent.class,
@@ -88,10 +92,13 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
                                 rootData.getNodes().removeAll(nodeToRemove);
                                 // refresh the client side
                                 getElement().callJsFunction("confirmDeleteNodes", NetworkConverter.convertIdListToJson(e.getNetworkNodesId()));
+                                // call afterDelete
+                                if (afterDeleteNodesListener != null) {
+                                    afterDeleteNodesListener.onComponentEvent(new NetworkEvent.NetworkAfterDeleteNodesEvent(this, e.getNetworkNodesId()));
+                                }
                             }
                         } catch (Exception exc ) {
                             exc.printStackTrace();
-                        } finally {
                         }
                     }
                 })
@@ -115,10 +122,13 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
                                 rootData.getEdges().removeAll(edgeToRemove);
                                 // refresh the client side
                                 getElement().callJsFunction("confirmDeleteEdges", NetworkConverter.convertIdListToJson(e.getNetworkEdgesId()));
+                                // call afterDelete
+                                if (afterDeleteEdgesListener != null) {
+                                    afterDeleteEdgesListener.onComponentEvent(new NetworkEvent.NetworkAfterDeleteEdgesEvent(this, e.getNetworkEdgesId()));
+                                }
                             }
                         } catch (Exception exc ) {
                             exc.printStackTrace();
-                        } finally {
                         }
                     }
                 })
@@ -136,17 +146,17 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
                             if (confirmed) {
                                 rootData.getNodes().addAll(e.getNetworkNodes());
                                 // refresh the client side
-                                getElement().callJsFunction("confirmAddNodes", networkConverter.convertNetworkNodeListToJsonArray(e.getNetworkNodes()));
+                                getElement().callJsFunction("confirmAddNodes", NetworkConverter.convertNetworkNodeListToJsonArray(e.getNetworkNodes()));
+                                if (afterNewNodesListener != null) {
+                                    afterNewNodesListener.onComponentEvent(new NetworkEvent.NetworkAfterNewNodesEvent<>(this, e.getNetworkNodes()));
+                                }
                             }
                         } catch (Exception exc ) {
                             exc.printStackTrace();
-                        } finally {
                         }
                     }
                 })
         );
-
-
 
         ComponentUtil.addListener(this, NetworkEvent.NetworkNewEdgesEvent.class,(ComponentEventListener)
                 ((ComponentEventListener<NetworkEvent.NetworkNewEdgesEvent<TEdge>>) e -> {
@@ -159,21 +169,82 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
                             if (confirmed) {
                                 rootData.getEdges().addAll(e.getNetworkEdges());
                                 // refresh the client side
-                                getElement().callJsFunction("confirmAddEdges", networkConverter.convertNetworkEdgeListToJsonArray(e.getNetworkEdges()));
+                                getElement().callJsFunction("confirmAddEdges", NetworkConverter.convertNetworkEdgeListToJsonArray(e.getNetworkEdges()));
+                                // call afterNew
+                                if (afterNewEdgesListener != null) {
+                                    afterNewEdgesListener.onComponentEvent(new NetworkEvent.NetworkAfterNewEdgesEvent<>(this, e.getNetworkEdges()));
+                                }
                             }
                         } catch (Exception exc ) {
                             exc.printStackTrace();
-                        } finally {
                         }
                     }
                 })
         );
 
+        ComponentUtil.addListener(this, NetworkEvent.NetworkUpdateNodesEvent.class,(ComponentEventListener)
+                ((ComponentEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode>>) e -> {
+                    if (!e.getNetworkNodes().isEmpty()) {
+                        try {
+                            boolean confirmed = true;
+                            for (NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode>> listener : updateNodesListeners) {
+                                confirmed &= listener.onConfirmEvent(e);
+                            }
+                            if (confirmed) {
+                                // Remove all the nodes with the same id and replace it with the updated nodes
+                                rootData.getNodes().removeAll(e.getNetworkNodes());
+                                rootData.getNodes().addAll(e.getNetworkNodes());
+                                // refresh the client side
+                                getElement().callJsFunction("confirmUpdateNodes", NetworkConverter.convertNetworkNodeListToJsonArray(e.getNetworkNodes()));
+                            }
+                        } catch (Exception exc ) {
+                            exc.printStackTrace();
+                        }
+                    }
+                })
+        );
+        ComponentUtil.addListener(this, NetworkEvent.NetworkUpdateEdgesEvent.class,(ComponentEventListener)
+                ((ComponentEventListener<NetworkEvent.NetworkUpdateEdgesEvent<TEdge>>) e -> {
+                    if (!e.getNetworkEdges().isEmpty()) {
+                        try {
+                            boolean confirmed = true;
+                            for (NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateEdgesEvent<TEdge>> listener : updateEdgesListeners) {
+                                confirmed &= listener.onConfirmEvent(e);
+                            }
+                            if (confirmed) {
+                                // Remove all the nodes with the same id and replace it with the updated nodes
+                                rootData.getEdges().removeAll(e.getNetworkEdges());
+                                rootData.getEdges().addAll(e.getNetworkEdges());
+                                // refresh the client side
+                                getElement().callJsFunction("confirmUpdateEdges", NetworkConverter.convertNetworkEdgeListToJsonArray(e.getNetworkEdges()));
+                            }
+                        } catch (Exception exc ) {
+                            exc.printStackTrace();
+                        }
+                    }
+                })
+        );
         ComponentUtil.addListener(this, NetworkEvent.NetworkNewComponentEvent.class,
                 ((ComponentEventListener<NetworkEvent.NetworkNewComponentEvent>) e -> {
                     newComponentListeners.forEach(listener -> listener.onComponentEvent(e));
                 })
         );
+
+        ComponentUtil.addListener(this, NetworkEvent.NetworkUpdateCoordinatesEvent.class,
+                ((ComponentEventListener<NetworkEvent.NetworkUpdateCoordinatesEvent>) e -> {
+                    // update the node coordinates in the model
+                    getNodes().stream().filter(node -> node.getId().equals(e.getNodeId())).findFirst().ifPresent(
+                            nodeToMove -> {
+                                // model updated
+                                nodeToMove.setX(e.getX());
+                                nodeToMove.setY(e.getY());
+                                // send the updated node to the client
+                                updateNode(nodeToMove);
+                            }
+                    );
+                })
+        );
+
     }
 
     public Registration addDeleteNodesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkDeleteNodesEvent> listener) {
@@ -197,6 +268,15 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
     public Registration addNewComponentListener(ComponentEventListener<NetworkEvent.NetworkNewComponentEvent> listener) {
         newComponentListeners.add(listener);
         return () -> newEdgesListeners.remove(listener);
+    }
+
+    public Registration addUpdateNodesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode>> listener) {
+        updateNodesListeners.add(listener);
+        return () -> updateNodesListeners.remove(listener);
+    }
+    public Registration addUpdateEdgesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateEdgesEvent<TEdge>> listener) {
+        updateEdgesListeners.add(listener);
+        return () -> updateEdgesListeners.remove(listener);
     }
     /**
      * Set the scale of the network
@@ -232,7 +312,7 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
 
     public void addNodes(List<TNode> networkNodes){
         rootData.getNodes().addAll(networkNodes);
-        getElement().callJsFunction("confirmAddNodes", networkConverter.convertNetworkNodeListToJsonArray(networkNodes));
+        getElement().callJsFunction("confirmAddNodes", NetworkConverter.convertNetworkNodeListToJsonArray(networkNodes));
     }
 
     // Call vcf-network-delete
@@ -254,9 +334,14 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
      * @param node node to be updated
      */
     public void updateNode(TNode node) {
-        getElement().callJsFunction("updateNode", node.toJson());
+        List<TNode> nodes = new ArrayList<>();
+        nodes.add(node);
+        updateNodes(nodes);
     }
 
+    public void updateNodes(List<TNode> networkNodes){
+        getElement().callJsFunction("confirmUpdateNodes", NetworkConverter.convertNetworkNodeListToJsonArray(networkNodes));
+    }
     /**
      * Add a new edge between 2 network edges
      *
@@ -271,7 +356,7 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
 
     public void addEdges(List<TEdge> networkEdges){
         rootData.getEdges().addAll(networkEdges);
-        getElement().callJsFunction("confirmAddEdges", networkConverter.convertNetworkEdgeListToJsonArray(networkEdges));
+        getElement().callJsFunction("confirmAddEdges", NetworkConverter.convertNetworkEdgeListToJsonArray(networkEdges));
     }
 
     /**
@@ -326,5 +411,36 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
 
     public AbstractNetworkComponent getRootData() {
         return rootData;
+    }
+
+    private ComponentEventListener<NetworkEvent.NetworkAfterDeleteNodesEvent> afterDeleteNodesListener;
+
+    public Registration addNetworkAfterDeleteNodesListener(ComponentEventListener<NetworkEvent.NetworkAfterDeleteNodesEvent> listener) {
+        afterDeleteNodesListener = listener;
+        return addListener(NetworkEvent.NetworkAfterDeleteNodesEvent.class, listener);
+    }
+
+    private ComponentEventListener<NetworkEvent.NetworkAfterNewNodesEvent<TNode>> afterNewNodesListener;
+
+    @SuppressWarnings("unchecked")
+    public Registration addNetworkAfterNewNodesListener(ComponentEventListener<NetworkEvent.NetworkAfterNewNodesEvent<TNode>> listener) {
+        afterNewNodesListener = listener;
+        return addListener(NetworkEvent.NetworkAfterNewNodesEvent.class, (ComponentEventListener) listener);
+    }
+
+
+    private ComponentEventListener<NetworkEvent.NetworkAfterDeleteEdgesEvent> afterDeleteEdgesListener;
+
+    public Registration addNetworkAfterDeleteEdgesListener(ComponentEventListener<NetworkEvent.NetworkAfterDeleteEdgesEvent> listener) {
+        afterDeleteEdgesListener = listener;
+        return addListener(NetworkEvent.NetworkAfterDeleteEdgesEvent.class, listener);
+    }
+
+    private ComponentEventListener<NetworkEvent.NetworkAfterNewEdgesEvent<TEdge>> afterNewEdgesListener;
+
+    @SuppressWarnings("unchecked")
+    public Registration addNetworkAfterNewEdgesListener(ComponentEventListener<NetworkEvent.NetworkAfterNewEdgesEvent<TEdge>> listener) {
+        afterNewEdgesListener = listener;
+        return addListener(NetworkEvent.NetworkAfterNewEdgesEvent.class, (ComponentEventListener) listener);
     }
 }

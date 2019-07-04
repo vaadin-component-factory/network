@@ -296,7 +296,7 @@ class VcfNetworkInfoPanel extends ThemableMixin(PolymerElement) {
   _createComponent() {
 
     const evt = new CustomEvent('vcf-network-create-component', {  cancelable: true });
-    const cancelled = !this.dispatchEvent(evt);
+    const cancelled = !this.main.dispatchEvent(evt);
     if (!cancelled) {
 
       const nodeIds = this.selection.nodes;
@@ -420,6 +420,17 @@ class VcfNetworkInfoPanel extends ThemableMixin(PolymerElement) {
     this._updateCoordsTimeout = setTimeout(() => {
       this.main._updateDataSet('nodes', { id: node.id, x, y });
     }, 200);
+    if (node.options.cid) {
+      this.$['component-x'].value = x;
+      this.$['component-y'].value = y;
+    } else {
+      this.$['node-x'].value = x;
+      this.$['node-y'].value = y;
+    }
+  }
+
+  _refreshCoords(opt, x, y) {
+    const node = this.main._network.body.nodes[opt.nodes[0]];
     if (node.options.cid) {
       this.$['component-x'].value = x;
       this.$['component-y'].value = y;

@@ -108,10 +108,10 @@ public class NetworkEvent {
 
 
     @DomEvent("vcf-network-after-new-nodes")
-    public static class NetworkAfterNewNodesEvent extends ComponentEvent<Network> {
-        private List<NetworkNode> networkNodes;
+    public static class NetworkAfterNewNodesEvent<TNode extends NetworkNode> extends ComponentEvent<Network> {
+        private List<TNode> networkNodes;
 
-        public NetworkAfterNewNodesEvent(Network source, boolean fromClient,
+        public NetworkAfterNewNodesEvent(Network<?, TNode, ?> source, boolean fromClient,
                                     @EventData("event.detail.items") JsonValue items,
                                     @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
             super(source, fromClient);
@@ -119,42 +119,41 @@ public class NetworkEvent {
             networkNodes = source.getNetworkConverter().convertJsonToNetworkNodeList(items);
         }
 
-        public NetworkAfterNewNodesEvent(Network source, boolean fromClient,
-                                         List<NetworkNode> networkNodes) {
-            super(source, fromClient);
+        public NetworkAfterNewNodesEvent(Network<?, TNode, ?> source,
+                                         List<TNode> networkNodes) {
+            super(source, false);
             this.networkNodes = networkNodes;
         }
-        public List<NetworkNode> getNetworkNodes() {
+        public List<TNode> getNetworkNodes() {
             return networkNodes;
         }
 
-        public void setNetworkNodes(List<NetworkNode> networkNodes) {
+        public void setNetworkNodes(List<TNode> networkNodes) {
             this.networkNodes = networkNodes;
         }
     }
 
 
     @DomEvent("vcf-network-after-new-edges")
-    public static class NetworkAfterNewEdgesEvent extends ComponentEvent<Network> {
-        private List<NetworkEdge> networkEdges;
+    public static class NetworkAfterNewEdgesEvent<TEdge extends NetworkEdge> extends ComponentEvent<Network> {
+        private List<TEdge> networkEdges;
 
-        public NetworkAfterNewEdgesEvent(Network source, boolean fromClient,
+        public NetworkAfterNewEdgesEvent(Network<?,?,TEdge>  source, boolean fromClient,
                                     @EventData("event.detail.items") JsonValue items,
                                     @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
             super(source, fromClient);
             networkEdges = source.getNetworkConverter().convertJsonToNetworkEdgeList(items);
         }
 
-        public NetworkAfterNewEdgesEvent(Network source, boolean fromClient,
-                                         List<NetworkEdge> networkEdges) {
-            super(source, fromClient);
+        public NetworkAfterNewEdgesEvent(Network source, List<TEdge> networkEdges) {
+            super(source, false);
             this.networkEdges = networkEdges;
         }
-        public List<NetworkEdge> getNetworkEdges() {
+        public List<TEdge> getNetworkEdges() {
             return networkEdges;
         }
 
-        public void setNetworkEdges(List<NetworkEdge> networkEdges) {
+        public void setNetworkEdges(List<TEdge> networkEdges) {
             this.networkEdges = networkEdges;
         }
     }
@@ -213,6 +212,10 @@ public class NetworkEvent {
             networkNodesId = NetworkConverter.convertJsonToIdList(ids);
         }
 
+        public NetworkAfterDeleteNodesEvent(Network source, List<String> networkNodesId) {
+            super(source, false);
+            this.networkNodesId = networkNodesId;
+        }
         public List<String> getNetworkNodesId() {
             return networkNodesId;
         }
@@ -232,6 +235,10 @@ public class NetworkEvent {
             networkEdgesId = NetworkConverter.convertJsonToIdList(ids);
         }
 
+        public NetworkAfterDeleteEdgesEvent(Network source, List<String> networkEdgesId) {
+            super(source, false);
+            this.networkEdgesId = networkEdgesId;
+        }
         public List<String> getNetworkEdgesId() {
             return networkEdgesId;
         }
@@ -241,12 +248,97 @@ public class NetworkEvent {
         }
     }
 
-
     @DomEvent("vcf-network-create-component")
     public static class NetworkNewComponentEvent extends ComponentEvent<Network> {
 
-        public NetworkNewComponentEvent(Network source, boolean fromClient) {
+        public NetworkNewComponentEvent(Network source, boolean fromClient,
+                                        @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
             super(source, fromClient);
+        }
+    }
+
+    @DomEvent("vcf-network-update-nodes")
+    public static class NetworkUpdateNodesEvent<TNode extends NetworkNode> extends ComponentEvent<Network> {
+        private List<TNode> networkNodes;
+
+        public NetworkUpdateNodesEvent(Network<?, TNode, ?> source, boolean fromClient,
+                                    @EventData("event.detail.items") JsonValue items,
+                                    @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
+            super(source, fromClient);
+
+            networkNodes = source.getNetworkConverter().convertJsonToNetworkNodeList(items);
+        }
+
+        public List<TNode> getNetworkNodes() {
+            return networkNodes;
+        }
+
+        public void setNetworkNodes(List<TNode> networkNodes) {
+            this.networkNodes = networkNodes;
+        }
+    }
+
+
+    @DomEvent("vcf-network-update-edges")
+    public static class NetworkUpdateEdgesEvent<TEdge extends NetworkEdge> extends ComponentEvent<Network> {
+        private List<TEdge> networkEdges;
+
+        public NetworkUpdateEdgesEvent(Network<?,?,TEdge> source, boolean fromClient,
+                                    @EventData("event.detail.items") JsonValue items,
+                                    @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
+            super(source, fromClient);
+            networkEdges = source.getNetworkConverter().convertJsonToNetworkEdgeList(items);
+        }
+
+        public List<TEdge> getNetworkEdges() {
+            return networkEdges;
+        }
+
+        public void setNetworkEdges(List<TEdge> networkEdges) {
+            this.networkEdges = networkEdges;
+        }
+    }
+
+
+    @DomEvent("vcf-network-update-coordinates")
+    public static class NetworkUpdateCoordinatesEvent extends ComponentEvent<Network> {
+        private String nodeId;
+        private double x;
+        private  double y;
+
+        public NetworkUpdateCoordinatesEvent(Network source, boolean fromClient,
+                                       @EventData("event.detail.id") String nodeId,
+                                       @EventData("event.detail.x") double x,
+                                       @EventData("event.detail.y") double y,
+                                       @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
+            super(source, fromClient);
+            this.nodeId = nodeId;
+            this.x = x;
+            this.y = y;
+        }
+
+        public String getNodeId() {
+            return nodeId;
+        }
+
+        public void setNodeId(String nodeId) {
+            this.nodeId = nodeId;
+        }
+
+        public double getX() {
+            return x;
+        }
+
+        public void setX(double x) {
+            this.x = x;
+        }
+
+        public double getY() {
+            return y;
+        }
+
+        public void setY(double y) {
+            this.y = y;
         }
     }
 

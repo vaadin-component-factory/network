@@ -11,6 +11,9 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Route("listener")
 public class ListenerTestView extends VerticalLayout {
 
@@ -66,7 +69,17 @@ public class ListenerTestView extends VerticalLayout {
             networkEdge.setTo(network.getNodes().get(i).getId());
             network.addEdge(networkEdge);
         }
+        network.addNetworkAfterDeleteNodesListener(event -> {
+            Notification.show("Nodes deleted =" + event.getNetworkNodesId());
 
+            Notification.show("Find all linked edges and delete it");
+            List<CustomNetworkEdge> edges = network.getEdges().stream().filter(customNetworkEdge -> event.getNetworkNodesId().contains(customNetworkEdge.getTo())||event.getNetworkNodesId().contains(customNetworkEdge.getFrom())).collect(Collectors.toList());
+
+            Notification.show(edges.size() +" edges found");
+            // delete it
+            network.deleteEdges(edges);
+
+        });
 /*
         network.retrieveNodes(networkNodes -> {
             System.out.println("adding Edge");
@@ -106,7 +119,7 @@ public class ListenerTestView extends VerticalLayout {
         });
 
         network.addNetworkAfterNewNodesListener(event -> {
-            Notification.show("Nodes Added =" + event.getNetworkNodes());
+            Notification.show("addNetworkAfterNewNodesListener Added =" + event.getNetworkNodes());
         });
 
         network.addNetworkNewEdgesListener(event -> {
@@ -128,6 +141,10 @@ public class ListenerTestView extends VerticalLayout {
             return !nok;
         });
 */
+
+        network.addNetworkAfterNewNodesListener(event -> {
+            Notification.show("addNetworkAfterNewNodesListener Added =" + event.getNetworkNodes());
+        });
 
       network.addNewEdgesListener(event -> {
           boolean nok = true;

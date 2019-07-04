@@ -170,6 +170,25 @@ class VcfNetwork extends ElementMixin(ThemableMixin(PolymerElement)) {
     this._confirmAddToDataSet('edges', edges);
   }
 
+// JCG
+
+  updateNodes(nodes) {
+    this._updateDataSet('nodes', nodes);
+  }
+  confirmUpdateNodes(nodes) {
+    this._confirmUpdateDataSet('nodes', nodes);
+  }
+
+  updateEdges(edges)
+  {
+    this._updateDataSet('edges', edges);
+  }
+  confirmUpdateEdges(edges)
+  {
+    this._confirmUpdateDataSet('edges', edges);
+  }
+
+  // JCG
   deleteEdges(edgeIds) {
     this._removeFromDataSet('edges', edgeIds);
   }
@@ -327,11 +346,28 @@ class VcfNetwork extends ElementMixin(ThemableMixin(PolymerElement)) {
     this._network.on('zoom', opt => {
       this._scale = opt.scale;
   });
+    // JCG
+    /*
     this._network.on('dragging', opt => {
       if (opt.nodes.length === 1) {
       this.$.infopanel._updateCoords(opt);
     }
+  });*/
+    this._network.on('dragEnd', opt => {
+      if (opt.nodes.length === 1) {
+      const node = this._network.body.nodes[opt.nodes[0]];
+      const x = Number.parseInt(node.x);
+      const y = Number.parseInt(node.y);
+      const evt = new CustomEvent('vcf-network-update-coordinates', { detail: { id: opt.nodes[0], x: x, y: y }, cancelable: true });
+      const cancelled = !this.dispatchEvent(evt);
+      if (!cancelled) {
+        this.$.infopanel._updateCoords(opt);
+      } else {
+        this.$.infopanel._refreshCoords(opt, x, y);
+      }
+    }
   });
+    // JCG
   }
 
   _initMultiSelect() {
@@ -603,8 +639,17 @@ class VcfNetwork extends ElementMixin(ThemableMixin(PolymerElement)) {
       this._propagateUpdates();
     }
   }
-
+// JCG
   _updateDataSet(dataset, items) {
+    const evt = new CustomEvent('vcf-network-update-' + dataset, { detail: { items }, cancelable: true });
+    const cancelled = !this.dispatchEvent(evt);
+    if (!cancelled) {
+      this._confirmUpdateDataSet(dataset, items);
+    }
+  }
+
+
+  _confirmUpdateDataSet(dataset, items) {
     this.data[dataset].update(items);
     if (this.context) {
       if (Array.isArray(items)) {
@@ -615,7 +660,7 @@ class VcfNetwork extends ElementMixin(ThemableMixin(PolymerElement)) {
       this._propagateUpdates();
     }
   }
-
+// JCG
   _updateComponentProperties(dataset, changes) {
     const updateNode = dataset.filter(node => node.id === changes.id)[0];
     Object.keys(changes).forEach(key => (updateNode[key] = changes[key]));
