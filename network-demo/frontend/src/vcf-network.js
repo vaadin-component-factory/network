@@ -49,7 +49,18 @@ class VcfNetwork extends ElementMixin(ThemableMixin(PolymerElement)) {
           <vcf-network-io-panel output></vcf-network-io-panel>
         </div>
       </main>
-      <vcf-network-info-panel id="infopanel"></vcf-network-info-panel>
+      <vcf-network-info-panel id="infopanel">
+        <div slot="node-form">
+          <slot name="node-form">
+            <vaadin-text-field id="node-name" label="Name" theme="small"></vaadin-text-field>
+            <vaadin-text-field id="node-id" label="ID" readonly autoselect theme="small"></vaadin-text-field>
+            <div class="coords">
+              <vaadin-text-field id="node-x" label="x" readonly autoselect theme="small"></vaadin-text-field>
+              <vaadin-text-field id="node-y" label="y" readonly autoselect theme="small"></vaadin-text-field>
+            </div> 
+          </slot>
+        </div>
+      </vcf-network-info-panel>
     `;
   }
 
@@ -324,6 +335,7 @@ class VcfNetwork extends ElementMixin(ThemableMixin(PolymerElement)) {
       if (this.addingComponent && !opt.nodes.length) {
       this._addComponent(opt);
     }
+      console.log('')
   });
     this._network.on('doubleClick', opt => {
       if (opt.nodes.length) {

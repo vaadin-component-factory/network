@@ -1,10 +1,8 @@
 package com.vaadin.componentfactory.demo;
 
 import com.vaadin.componentfactory.Network;
-import com.vaadin.componentfactory.demo.data.CustomNetworkComponent;
 import com.vaadin.componentfactory.demo.data.CustomNetworkEdge;
 import com.vaadin.componentfactory.demo.data.CustomNetworkNode;
-import com.vaadin.componentfactory.model.AbstractNetworkComponent;
 import com.vaadin.componentfactory.model.NetworkEdge;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
@@ -17,7 +15,7 @@ import java.util.stream.Collectors;
 @Route("listener")
 public class ListenerTestView extends VerticalLayout {
 
-    private Network<CustomNetworkComponent,CustomNetworkNode, CustomNetworkEdge> network = new Network<>(CustomNetworkComponent.class,CustomNetworkNode.class,CustomNetworkEdge.class);
+    private Network<CustomNetworkNode, CustomNetworkEdge> network = new Network<>(CustomNetworkNode.class,CustomNetworkEdge.class);
 
     public ListenerTestView() {
         network.setWidthFull();
@@ -47,7 +45,7 @@ public class ListenerTestView extends VerticalLayout {
         node3.setX(-50);
         node3.setY(0);
         network.addNode(node3);
-        CustomNetworkComponent ncomponent = new CustomNetworkComponent();
+        CustomNetworkNode ncomponent = new CustomNetworkNode();
 
         ncomponent.setLabel("Component");
         ncomponent.setX(0);
@@ -60,7 +58,7 @@ public class ListenerTestView extends VerticalLayout {
         node4.setX(-50);
         node4.setY(0);
         ncomponent.getNodes().add(node4);
-        //network.addNode(ncomponent);
+        network.addNode(ncomponent);
 
         System.out.println("adding Edge");
         for (int i = 1; i < network.getNodes().size(); i++) {
@@ -80,11 +78,12 @@ public class ListenerTestView extends VerticalLayout {
             network.deleteEdges(edges);
 
         });
+        network.addNodeEditor(new CustomNetworkNodeEditorImpl());
 /*
         network.retrieveNodes(networkNodes -> {
             System.out.println("adding Edge");
             for (int i = 1; i < networkNodes.size(); i++) {
-                NetworkEdge networkEdge = new NetworkEdge();
+                NetworkEdgeImpl networkEdge = new NetworkEdgeImpl();
                 networkEdge.setFrom(networkNodes.get(i-1).getId());
                 networkEdge.setTo(networkNodes.get(i).getId());
                 network.addEdge(networkEdge);
@@ -126,7 +125,7 @@ public class ListenerTestView extends VerticalLayout {
             Notification.show("Before new edge");
             boolean nok = true;
             if (event.getNetworkEdges().size() == 1) {
-                NetworkEdge edge = event.getNetworkEdges().get(0);
+                NetworkEdgeImpl edge = event.getNetworkEdges().get(0);
                 // check if there is an edge from <- to
                 nok = network.getEdges().stream()
                         .filter(networkEdge ->

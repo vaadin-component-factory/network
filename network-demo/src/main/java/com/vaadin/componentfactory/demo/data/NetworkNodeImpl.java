@@ -1,5 +1,22 @@
 package com.vaadin.componentfactory.demo.data;
 
+/*
+ * #%L
+ * Network Component
+ * %%
+ * Copyright (C) 2019 Vaadin Ltd
+ * %%
+ * This program is available under Commercial Vaadin Add-On License 3.0
+ * (CVALv3).
+ * 
+ * See the file license.html distributed with this software for more
+ * information about licensing.
+ * 
+ * You should have received a copy of the CVALv3 along with this program.
+ * If not, see <http://vaadin.com/license/cval-3>.
+ * #L%
+ */
+
 import com.vaadin.componentfactory.converter.NetworkConverter;
 import com.vaadin.componentfactory.model.NetworkNode;
 import com.vaadin.flow.component.JsonSerializable;
@@ -11,16 +28,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public class CustomNetworkNode implements NetworkNode<CustomNetworkNode,CustomNetworkEdge> {
+/**
+ * Node displayed on the network graph
+ */
+public class NetworkNodeImpl implements NetworkNode<NetworkNodeImpl,NetworkEdgeImpl> {
 
     private UUID id;
     private String label;
     private double x;
     private double y;
     private String type;
-    private String customField;
 
-    public CustomNetworkNode() {
+
+    public NetworkNodeImpl() {
 
     }
 
@@ -71,7 +91,7 @@ public class CustomNetworkNode implements NetworkNode<CustomNetworkNode,CustomNe
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        CustomNetworkNode that = (CustomNetworkNode) o;
+        NetworkNodeImpl that = (NetworkNodeImpl) o;
         return Objects.equals(id, that.id);
     }
 
@@ -85,34 +105,25 @@ public class CustomNetworkNode implements NetworkNode<CustomNetworkNode,CustomNe
         return label;
     }
 
-    private List<CustomNetworkNode> nodes = new ArrayList<>();
+    private List<NetworkNodeImpl> nodes = new ArrayList<>();
 
-    private List<CustomNetworkEdge> edges = new ArrayList<>();
+    private List<NetworkEdgeImpl> edges = new ArrayList<>();
 
-    public List<CustomNetworkNode> getNodes() {
+    public List<NetworkNodeImpl> getNodes() {
         return nodes;
     }
 
-    public void setNodes(List<CustomNetworkNode> nodes) {
+    public void setNodes(List<NetworkNodeImpl> nodes) {
         this.nodes = nodes;
     }
 
-    public List<CustomNetworkEdge> getEdges() {
+    public List<NetworkEdgeImpl> getEdges() {
         return edges;
     }
 
-    public void setEdges(List<CustomNetworkEdge> edges) {
+    public void setEdges(List<NetworkEdgeImpl> edges) {
         this.edges = edges;
     }
-
-    public String getCustomField() {
-        return customField;
-    }
-
-    public void setCustomField(String customField) {
-        this.customField = customField;
-    }
-
     @Override
     public JsonObject toJson() {
         JsonObject obj = Json.createObject();
@@ -124,9 +135,6 @@ public class CustomNetworkNode implements NetworkNode<CustomNetworkNode,CustomNe
         obj.put("y",getY());
         if (getType() != null) {
             obj.put("type", getType());
-        }
-        if (getCustomField() != null) {
-            obj.put("custom-field", getCustomField());
         }
         // put nodes and edges
         obj.put("nodes", NetworkConverter.convertNetworkNodeListToJsonArray(getNodes()));
@@ -145,12 +153,8 @@ public class CustomNetworkNode implements NetworkNode<CustomNetworkNode,CustomNe
         if (value.hasKey("type")) {
             setType(value.getString("type"));
         }
-        if (value.hasKey("custom-field")) {
-            setCustomField(value.getString("custom-field"));
-        }
-        setNodes(NetworkConverter.convertJsonToObjectList(value.getArray("nodes"), CustomNetworkNode.class));
-        setEdges(NetworkConverter.convertJsonToObjectList(value.getArray("edges"), CustomNetworkEdge.class));
+        setNodes(NetworkConverter.convertJsonToObjectList(value.getArray("nodes"), NetworkNodeImpl.class));
+        setEdges(NetworkConverter.convertJsonToObjectList(value.getArray("edges"), NetworkEdgeImpl.class));
         return this;
     }
-
 }

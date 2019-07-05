@@ -1,9 +1,8 @@
 package com.vaadin.componentfactory.demo;
 
 import com.vaadin.componentfactory.Network;
-import com.vaadin.componentfactory.model.NetworkComponent;
-import com.vaadin.componentfactory.model.NetworkEdge;
-import com.vaadin.componentfactory.model.NetworkNode;
+import com.vaadin.componentfactory.demo.data.NetworkEdgeImpl;
+import com.vaadin.componentfactory.demo.data.NetworkNodeImpl;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.router.Route;
@@ -14,7 +13,7 @@ public class NetworkView extends DemoView {
     @Override
     protected void initView() {
         getElement().setAttribute("style","max-width:90%;");
-        Network<NetworkComponent,NetworkNode, NetworkEdge> network = new Network<>(NetworkComponent.class,NetworkNode.class,NetworkEdge.class);
+        Network<NetworkNodeImpl, NetworkEdgeImpl> network = new Network<>(NetworkNodeImpl.class,NetworkEdgeImpl.class);
         Div description = new Div();
         description.setText("Basic usage");
         addCard("Basic Network usage", network, description);

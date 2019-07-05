@@ -1,4 +1,4 @@
-package com.vaadin.componentfactory.model;
+package com.vaadin.componentfactory.demo.data;
 
 /*
  * #%L
@@ -18,6 +18,7 @@ package com.vaadin.componentfactory.model;
  */
 
 
+import com.vaadin.componentfactory.model.NetworkEdge;
 import com.vaadin.flow.component.JsonSerializable;
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -27,39 +28,61 @@ import java.util.UUID;
 /**
  * link between 2 nodes
  */
-public interface NetworkEdge extends JsonSerializable {
+public class NetworkEdgeImpl implements NetworkEdge {
+
+    private UUID id;
+    private String from;
+    private String to;
 
 
-    String getId();
+    public String getId() {
+        if (id == null){
+            id = UUID.randomUUID();
+        }
+        return id.toString();
+    }
 
-    void setId(String id);
+    public void setId(String id) {
+        this.id = UUID.fromString(id);
+    }
 
     /**
      *
      * @return id of the source node
      */
-    String getFrom();
+    public String getFrom() {
+        return from;
+    }
+
     /**
      * set the id of the source node
      *
      * @param from id
      */
-    void setFrom(String from);
+    public void setFrom(String from) {
+        this.from = from;
+    }
+
 
     /**
      *
      * @return id of the destination node
      */
-    String getTo();
+    public String getTo() {
+        return to;
+    }
+
     /**
      * set the id of the destination node
      *
      * @param to id
      */
-    void setTo(String to);
+    public void setTo(String to) {
+        this.to = to;
+    }
 
-
-    default JsonObject toJson() {
+    @Override
+    public JsonObject toJson() {
         JsonObject obj = Json.createObject();
         if (getId() != null) {
             obj.put("id", getId());
@@ -69,7 +92,8 @@ public interface NetworkEdge extends JsonSerializable {
         return obj;
     }
 
-    default JsonSerializable readJson(JsonObject value) {
+    @Override
+    public JsonSerializable readJson(JsonObject value) {
         if (value.hasKey("id")) {
             setId(value.getString("id"));
         }
@@ -78,4 +102,8 @@ public interface NetworkEdge extends JsonSerializable {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return from + " ==>" + to;
+    }
 }

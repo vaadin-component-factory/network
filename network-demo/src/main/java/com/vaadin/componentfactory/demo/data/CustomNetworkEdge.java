@@ -4,7 +4,7 @@ import com.vaadin.componentfactory.model.NetworkEdge;
 import com.vaadin.flow.component.JsonSerializable;
 import elemental.json.JsonObject;
 
-public class CustomNetworkEdge extends NetworkEdge {
+public class CustomNetworkEdge extends NetworkEdgeImpl {
 
     private String customField;
 

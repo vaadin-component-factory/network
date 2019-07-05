@@ -21,88 +21,45 @@ import com.vaadin.flow.component.JsonSerializable;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
  * Node displayed on the network graph
  */
-public class NetworkNode implements JsonSerializable {
-
-    private UUID id;
-    private String label;
-    private double x;
-    private double y;
-    private String type;
+public interface NetworkNode<TNode extends NetworkNode, TEdge> extends JsonSerializable {
 
 
-    public NetworkNode() {
+    public String getId();
 
-    }
+    public void setId(String id);
 
-    public String getId() {
-        if (id == null){
-            id = UUID.randomUUID();
-        }
-        return id.toString();
-    }
+    public String getLabel();
 
-    public void setId(String id) {
-        this.id = UUID.fromString(id);
-    }
+    public void setLabel(String label);
+    public double getX();
 
-    public String getLabel() {
-        return label;
-    }
+    public void setX(double x);
 
-    public void setLabel(String label) {
-        this.label = label;
-    }
+    public double getY();
 
-    public double getX() {
-        return x;
-    }
+    public void setY(double y);
 
-    public void setX(double x) {
-        this.x = x;
-    }
+    public String getType();
 
-    public double getY() {
-        return y;
-    }
+    public void setType(String type);
 
-    public void setY(double y) {
-        this.y = y;
-    }
 
-    public String getType() {
-        return type;
-    }
+    public List<TNode> getNodes();
 
-    public void setType(String type) {
-        this.type = type;
-    }
+    public void setNodes(List<TNode> nodes);
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        NetworkNode that = (NetworkNode) o;
-        return Objects.equals(id, that.id);
-    }
+    public List<TEdge> getEdges();
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+    public void setEdges(List<TEdge> edges);
 
-    @Override
-    public String toString() {
-        return label;
-    }
-
-    @Override
-    public JsonObject toJson() {
+    default JsonObject toJson() {
         JsonObject obj = Json.createObject();
         obj.put("id", getId());
         if (getLabel() != null) {
@@ -116,8 +73,7 @@ public class NetworkNode implements JsonSerializable {
         return obj;
     }
 
-    @Override
-    public JsonSerializable readJson(JsonObject value) {
+    default JsonSerializable readJson(JsonObject value) {
         if (value.hasKey("id")) {
             setId(value.getString("id"));
         }

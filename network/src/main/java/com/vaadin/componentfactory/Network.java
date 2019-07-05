@@ -18,53 +18,54 @@ package com.vaadin.componentfactory;
  */
 
 import com.vaadin.componentfactory.converter.NetworkConverter;
+import com.vaadin.componentfactory.editor.NetworkNodeEditor;
 import com.vaadin.componentfactory.event.NetworkEvent;
-import com.vaadin.componentfactory.model.AbstractNetworkComponent;
+import com.vaadin.componentfactory.model.NetworkEdge;
+import com.vaadin.componentfactory.model.NetworkNode;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.componentfactory.model.NetworkEdge;
-import com.vaadin.componentfactory.model.NetworkNode;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 
 @Tag("vcf-network")
 @JsModule("./src/vcf-network.js")
-public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TNode extends NetworkNode,TEdge extends NetworkEdge> extends Component implements HasSize, HasTheme {
+public class Network<TNode extends NetworkNode<TNode,TEdge>,TEdge extends NetworkEdge> extends Component implements HasSize, HasTheme {
 
-    private TComponent rootData;
+    private TNode rootData;
 
     private final Class<TNode> nodeClass;
     private final Class<TEdge> edgeClass;
-    private final Class<TComponent> componentClass;
 
-    private final NetworkConverter<TComponent, TNode, TEdge> networkConverter;
+    private final NetworkConverter<TNode, TEdge> networkConverter;
 
-    public Network(Class<TComponent> componentClass,Class<TNode> nodeClass, Class<TEdge> edgeClass) {
+    public Network(Class<TNode> nodeClass, Class<TEdge> edgeClass) {
         this.nodeClass = nodeClass;
         this.edgeClass = edgeClass;
-        this.componentClass = componentClass;
         try {
-            rootData = componentClass.getDeclaredConstructor().newInstance();
+            rootData = nodeClass.getDeclaredConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
         }
-        networkConverter = new NetworkConverter<>(this.componentClass, this.nodeClass, this.edgeClass);
+        networkConverter = new NetworkConverter<>(this.nodeClass, this.edgeClass);
         registerHandlers();
     }
 
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkDeleteNodesEvent>> deleteNodesListeners = new LinkedHashSet<>();
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkDeleteEdgesEvent>> deleteEdgesListeners = new LinkedHashSet<>();
-    private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent<TNode>>> newNodesListeners = new LinkedHashSet<>();
+    private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent<TNode,TEdge>>> newNodesListeners = new LinkedHashSet<>();
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewEdgesEvent<TEdge>>> newEdgesListeners = new LinkedHashSet<>();
-    private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode>>> updateNodesListeners = new LinkedHashSet<>();
+    private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode,TEdge>>> updateNodesListeners = new LinkedHashSet<>();
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateEdgesEvent<TEdge>>> updateEdgesListeners = new LinkedHashSet<>();
     private final Set<ComponentEventListener<NetworkEvent.NetworkNewComponentEvent>> newComponentListeners = new LinkedHashSet<>();
 
 
-    public NetworkConverter<TComponent, TNode, TEdge> getNetworkConverter() {
+    public NetworkConverter<TNode, TEdge> getNetworkConverter() {
         return networkConverter;
     }
 
@@ -133,11 +134,11 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
 
 
         ComponentUtil.addListener(this, NetworkEvent.NetworkNewNodesEvent.class,(ComponentEventListener)
-                ((ComponentEventListener<NetworkEvent.NetworkNewNodesEvent<TNode>>) e -> {
+                ((ComponentEventListener<NetworkEvent.NetworkNewNodesEvent<TNode,TEdge>>) e -> {
                     if (!e.getNetworkNodes().isEmpty()) {
                         try {
                             boolean confirmed = true;
-                            for (NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent<TNode>> listener : newNodesListeners) {
+                            for (NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent<TNode,TEdge>> listener : newNodesListeners) {
                                 confirmed &= listener.onConfirmEvent(e);
                             }
                             if (confirmed) {
@@ -180,11 +181,11 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
         );
 
         ComponentUtil.addListener(this, NetworkEvent.NetworkUpdateNodesEvent.class,(ComponentEventListener)
-                ((ComponentEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode>>) e -> {
+                ((ComponentEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode,TEdge>>) e -> {
                     if (!e.getNetworkNodes().isEmpty()) {
                         try {
                             boolean confirmed = true;
-                            for (NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode>> listener : updateNodesListeners) {
+                            for (NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode,TEdge>> listener : updateNodesListeners) {
                                 confirmed &= listener.onConfirmEvent(e);
                             }
                             if (confirmed) {
@@ -254,7 +255,7 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
         return () -> deleteEdgesListeners.remove(listener);
     }
 
-    public Registration addNewNodesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent<TNode>> listener) {
+    public Registration addNewNodesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent<TNode,TEdge>> listener) {
         newNodesListeners.add(listener);
         return () -> newNodesListeners.remove(listener);
     }
@@ -267,7 +268,7 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
         return () -> newEdgesListeners.remove(listener);
     }
 
-    public Registration addUpdateNodesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode>> listener) {
+    public Registration addUpdateNodesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode,TEdge>> listener) {
         updateNodesListeners.add(listener);
         return () -> updateNodesListeners.remove(listener);
     }
@@ -408,14 +409,14 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
     }
 
     @SuppressWarnings("unchecked")
-    public Registration addHoverNodeListener(ComponentEventListener<NetworkEvent.NetworkHoverNodeEvent<TNode>> listener) {
+    public Registration addHoverNodeListener(ComponentEventListener<NetworkEvent.NetworkHoverNodeEvent<TNode,TEdge>> listener) {
         return addListener(NetworkEvent.NetworkHoverNodeEvent.class, (ComponentEventListener)  listener);
     }
     @SuppressWarnings("unchecked")
     public Registration addHoverEdgeListener(ComponentEventListener<NetworkEvent.NetworkHoverEdgeEvent<TEdge>> listener) {
         return addListener(NetworkEvent.NetworkHoverEdgeEvent.class, (ComponentEventListener)  listener);
     }
-    public AbstractNetworkComponent getRootData() {
+    public TNode getRootData() {
         return rootData;
     }
 
@@ -426,10 +427,10 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
         return addListener(NetworkEvent.NetworkAfterDeleteNodesEvent.class, listener);
     }
 
-    private ComponentEventListener<NetworkEvent.NetworkAfterNewNodesEvent<TNode>> afterNewNodesListener;
+    private ComponentEventListener<NetworkEvent.NetworkAfterNewNodesEvent<TNode,TEdge>> afterNewNodesListener;
 
     @SuppressWarnings("unchecked")
-    public Registration addNetworkAfterNewNodesListener(ComponentEventListener<NetworkEvent.NetworkAfterNewNodesEvent<TNode>> listener) {
+    public Registration addNetworkAfterNewNodesListener(ComponentEventListener<NetworkEvent.NetworkAfterNewNodesEvent<TNode,TEdge>> listener) {
         afterNewNodesListener = listener;
         return addListener(NetworkEvent.NetworkAfterNewNodesEvent.class, (ComponentEventListener) listener);
     }
@@ -448,5 +449,40 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
     public Registration addNetworkAfterNewEdgesListener(ComponentEventListener<NetworkEvent.NetworkAfterNewEdgesEvent<TEdge>> listener) {
         afterNewEdgesListener = listener;
         return addListener(NetworkEvent.NetworkAfterNewEdgesEvent.class, (ComponentEventListener) listener);
+    }
+
+    private NetworkNodeEditor<TNode,TEdge> nodeEditor;
+
+    public void addNodeEditor(NetworkNodeEditor<TNode,TEdge> editor) {
+        this.nodeEditor = editor;
+        editor.getView().getElement().setAttribute("slot", "node-form");
+        getElement().appendChild(editor.getView().getElement());
+
+        // register open-node-editor with an ID
+        ComponentUtil.addListener(this, NetworkEvent.NetworkOpenNodeEditorEvent.class,
+                ((ComponentEventListener<NetworkEvent.NetworkOpenNodeEditorEvent>) e -> {
+                    // get the node from the ID or create a new one
+                    try {
+                        TNode editedNode = getNodes().stream().filter(node -> node.getId().equals(e.getNodeId())).findFirst()
+                                .orElse(nodeClass.getDeclaredConstructor().newInstance());
+                        nodeEditor.readBean(editedNode);
+                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+                        ex.printStackTrace();
+                    }
+
+                })
+        );
+
+        // register save-node-editor
+        ComponentUtil.addListener(this, NetworkEvent.NetworkSaveNodeEditorEvent.class,
+                ((ComponentEventListener<NetworkEvent.NetworkSaveNodeEditorEvent>) e -> {
+                    // get the node from the ID or create a new one
+                    if (nodeEditor.writeBeanIfValid(nodeEditor.getBean())){
+                        TNode savedBean = nodeEditor.save(nodeEditor.getBean());
+                        // update the client side
+                        updateNode(savedBean);
+                    }
+                })
+        );
     }
 }

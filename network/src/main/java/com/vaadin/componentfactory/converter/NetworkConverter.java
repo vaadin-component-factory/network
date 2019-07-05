@@ -17,7 +17,6 @@ package com.vaadin.componentfactory.converter;
  * #L%
  */
 
-import com.vaadin.componentfactory.model.AbstractNetworkComponent;
 import com.vaadin.flow.component.JsonSerializable;
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -30,15 +29,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NetworkConverter<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TNode extends NetworkNode,TEdge extends NetworkEdge> {
+public class NetworkConverter<TNode extends NetworkNode<TNode,TEdge>,TEdge extends NetworkEdge> {
     private final Class<TNode> nodeClass;
     private final Class<TEdge> edgeClass;
-    private final Class<TComponent> componentClass;
 
-    public NetworkConverter(Class<TComponent> componentClass, Class<TNode> nodeClass, Class<TEdge> edgeClass) {
+    public NetworkConverter(Class<TNode> nodeClass, Class<TEdge> edgeClass) {
         this.nodeClass = nodeClass;
         this.edgeClass = edgeClass;
-        this.componentClass = componentClass;
     }
 
     public static JsonArray convertNetworkNodeListToJsonArray(List<? extends JsonSerializable> networkNodes) {
@@ -70,31 +67,31 @@ public class NetworkConverter<TComponent extends AbstractNetworkComponent<TNode,
         return array;
     }
 
-    public List<TNode> convertJsonToNetworkNodeList(JsonValue value) {
-        return convertJsonToNetworkNodeList(value, nodeClass);
+    public List<TNode> convertJsonToObjectList(JsonValue value) {
+        return convertJsonToObjectList(value, nodeClass);
     }
 
-    public static <T extends JsonSerializable> List<T> convertJsonToNetworkNodeList(JsonValue value, Class<T> tClass) {
-        List<T> networkNodes = new ArrayList<>();
+    public static <T extends JsonSerializable> List<T> convertJsonToObjectList(JsonValue value, Class<T> tClass) {
+        List<T> list = new ArrayList<>();
         if (value instanceof JsonArray) {
             JsonArray array = (JsonArray)  value;
             for (int i = 0; i < array.length(); i++) {
                 try {
                     T node = tClass.getDeclaredConstructor().newInstance();
                     node.readJson(array.getObject(i));
-                    networkNodes.add(node);
+                    list.add(node);
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                     e.printStackTrace();
                 }
             }
         } else if (value instanceof JsonObject){
             JsonObject jsonObject = (JsonObject)  value;
-            if (jsonObject.hasKey("x")){
+            if (jsonObject.hasKey("x")|| jsonObject.hasKey("from")){
                 // its an item
                 try {
                     T node = tClass.getDeclaredConstructor().newInstance();
                     node.readJson(jsonObject);
-                    networkNodes.add(node);
+                    list.add(node);
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                     e.printStackTrace();
                 }
@@ -105,61 +102,18 @@ public class NetworkConverter<TComponent extends AbstractNetworkComponent<TNode,
                     try {
                         T node = tClass.getDeclaredConstructor().newInstance();
                         node.readJson(jsonNode);
-                        networkNodes.add(node);
+                        list.add(node);
                     } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                         e.printStackTrace();
                     }
                 }
             }
         }
-        return networkNodes;
+        return list;
     }
 
     public List<TEdge> convertJsonToNetworkEdgeList(JsonValue value) {
-        return convertJsonToNetworkEdgeList(value, edgeClass);
-    }
-
-    public static <T extends JsonSerializable> List<T> convertJsonToNetworkEdgeList(JsonValue value, Class<T> tClass) {
-        List<T> networkEdges = new ArrayList<>();
-        if (value instanceof JsonArray) {
-            JsonArray array = (JsonArray)  value;
-            for (int i = 0; i < array.length(); i++) {
-                try {
-                    T edge = tClass.getDeclaredConstructor().newInstance();
-                    edge.readJson(array.getObject(i));
-                    networkEdges.add(edge);
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        } else if (value instanceof JsonObject){
-            JsonObject jsonObject = (JsonObject)  value;
-            if (jsonObject.hasKey("from")){
-                // its an item
-                try {
-                    T edge = tClass.getDeclaredConstructor().newInstance();
-                    edge.readJson(jsonObject);
-                    networkEdges.add(edge);
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                // its a map of edges
-                for (String id : jsonObject.keys()) {
-                    JsonObject jsonEdge = jsonObject.getObject(id);
-                    try {
-                        T edge = tClass.getDeclaredConstructor().newInstance();
-                        edge.readJson(jsonEdge);
-                        networkEdges.add(edge);
-                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-        return networkEdges;
-
+        return convertJsonToObjectList(value, edgeClass);
     }
 
 

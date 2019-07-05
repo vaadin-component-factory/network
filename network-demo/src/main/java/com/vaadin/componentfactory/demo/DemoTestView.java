@@ -1,9 +1,8 @@
 package com.vaadin.componentfactory.demo;
 
 import com.vaadin.componentfactory.Network;
-import com.vaadin.componentfactory.model.AbstractNetworkComponent;
-import com.vaadin.componentfactory.model.NetworkComponent;
-import com.vaadin.componentfactory.model.NetworkEdge;
+import com.vaadin.componentfactory.demo.data.NetworkEdgeImpl;
+import com.vaadin.componentfactory.demo.data.NetworkNodeImpl;
 import com.vaadin.componentfactory.model.NetworkNode;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
@@ -21,7 +20,7 @@ import com.vaadin.flow.router.Route;
 @Route("")
 public class DemoTestView extends VerticalLayout {
 
-    private Network<NetworkComponent,NetworkNode, NetworkEdge> network = new Network<>(NetworkComponent.class,NetworkNode.class, NetworkEdge.class);
+    private Network<NetworkNodeImpl, NetworkEdgeImpl> network = new Network<>(NetworkNodeImpl.class, NetworkEdgeImpl.class);
 
     // simple controls - scale and reset network
     private Button scaleButton = new Button("get scale", e -> showScaleAction());
@@ -31,7 +30,7 @@ public class DemoTestView extends VerticalLayout {
     private Button setScaleButton = new Button("set scale to ", e -> setScaleAction());
 
     // node controls
-    private Binder<NetworkNode> binderNode = new Binder<>(NetworkNode.class);
+    private Binder<NetworkNodeImpl> binderNode = new Binder<>(NetworkNodeImpl.class);
     private TextField nodeUuid = new TextField("id");
     private TextField nodeName = new TextField("Name");
     private NumberField x = new NumberField("x");
@@ -42,7 +41,7 @@ public class DemoTestView extends VerticalLayout {
 
     private Button newNodeButton = new Button("New node", e -> newNodeAction());
 
-    private ComboBox<NetworkNode> nodeComboBox = new ComboBox<>("selectedNode");
+    private ComboBox<NetworkNodeImpl> nodeComboBox = new ComboBox<>("selectedNode");
 
     private Button refreshComboboxButton = new Button("refresh", event -> refreshNodesAction());
 
@@ -50,7 +49,7 @@ public class DemoTestView extends VerticalLayout {
 
     // edge controls
 
-    private ComboBox<NetworkEdge> edgeComboBox = new ComboBox<>("selectedEdge");
+    private ComboBox<NetworkEdgeImpl> edgeComboBox = new ComboBox<>("selectedEdge");
 
     private Button refreshEdgeComboboxButton = new Button("refresh", event -> refreshEdgesAction());
 
@@ -99,7 +98,7 @@ public class DemoTestView extends VerticalLayout {
         binderNode.forField(y).asRequired().bind(NetworkNode::getY,NetworkNode::setY);
         nodeUuid.setEnabled(false);
 
-        binderNode.setBean(new NetworkNode());
+        binderNode.setBean(new NetworkNodeImpl());
 
         nodeComboBox.setItemLabelGenerator(NetworkNode::getLabel);
     }
@@ -122,7 +121,7 @@ public class DemoTestView extends VerticalLayout {
     }
 
     private void newNodeAction() {
-        binderNode.setBean(new NetworkNode());
+        binderNode.setBean(new NetworkNodeImpl());
         addNodeButton.setText("Add node");
     }
 
