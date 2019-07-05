@@ -405,10 +405,19 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    public Registration addNetworkSelectionListener(ComponentEventListener<NetworkEvent.NetworkSelectionEvent> listener) {
-        return addListener(NetworkEvent.NetworkSelectionEvent.class, listener);
+    @SuppressWarnings("unchecked")
+    public Registration addNetworkSelectionListener(ComponentEventListener<NetworkEvent.NetworkSelectionEvent<TNode, TEdge>> listener) {
+        return addListener(NetworkEvent.NetworkSelectionEvent.class, (ComponentEventListener)  listener);
     }
 
+    @SuppressWarnings("unchecked")
+    public Registration addHoverNodeListener(ComponentEventListener<NetworkEvent.NetworkHoverNodeEvent<TNode>> listener) {
+        return addListener(NetworkEvent.NetworkHoverNodeEvent.class, (ComponentEventListener)  listener);
+    }
+    @SuppressWarnings("unchecked")
+    public Registration addHoverEdgeListener(ComponentEventListener<NetworkEvent.NetworkHoverEdgeEvent<TEdge>> listener) {
+        return addListener(NetworkEvent.NetworkHoverEdgeEvent.class, (ComponentEventListener)  listener);
+    }
     public AbstractNetworkComponent getRootData() {
         return rootData;
     }

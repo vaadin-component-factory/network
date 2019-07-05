@@ -28,38 +28,43 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class NetworkEvent {
 
     private static final String EVENT_PREVENT_DEFAULT_JS = "event.preventDefault()";
 
     @DomEvent("vcf-network-selection")
-    public static class NetworkSelectionEvent extends ComponentEvent<Network> {
-        private List<NetworkNode> networkNodes;
-        private List<NetworkEdge> networkEdges;
+    public static class NetworkSelectionEvent<TNode extends NetworkNode, TEdge extends NetworkEdge> extends ComponentEvent<Network> {
+        private List<TNode> networkNodes;
+        private List<TEdge> networkEdges;
 
-        public NetworkSelectionEvent(Network source, boolean fromClient,
-                                     @EventData("event.detail.nodes") JsonObject nodes,
-                                     @EventData("event.detail.edges") JsonObject edges) {
+        public NetworkSelectionEvent(Network<?, TNode, TEdge> source, boolean fromClient,
+                                     @EventData("event.detail.nodes") JsonValue nodes,
+                                     @EventData("event.detail.edges") JsonValue edges) {
             super(source, fromClient);
-
+            List<String> nodeIds = NetworkConverter.convertJsonToIdList(nodes);
+            networkNodes = source.getNodes().stream().filter( networkNode -> nodeIds.contains(networkNode.getId())).collect(Collectors.toList());
+            List<String> edgeIds = NetworkConverter.convertJsonToIdList(edges);
+            networkEdges = source.getEdges().stream().filter( networkNode -> edgeIds.contains(networkNode.getId())).collect(Collectors.toList());
         }
 
-        public List<NetworkNode> getNetworkNodes() {
+        public List<TNode> getNetworkNodes() {
             return networkNodes;
         }
 
-        public void setNetworkNodes(List<NetworkNode> networkNodes) {
+        public void setNetworkNodes(List<TNode> networkNodes) {
             this.networkNodes = networkNodes;
         }
 
-        public List<NetworkEdge> getNetworkEdges() {
+        public List<TEdge> getNetworkEdges() {
             return networkEdges;
         }
 
-        public void setNetworkEdges(List<NetworkEdge> networkEdges) {
+        public void setNetworkEdges(List<TEdge> networkEdges) {
             this.networkEdges = networkEdges;
         }
     }
@@ -341,6 +346,49 @@ public class NetworkEvent {
             this.y = y;
         }
     }
+
+
+
+    @DomEvent("vcf-network-hover-node")
+    public static class NetworkHoverNodeEvent<TNode extends NetworkNode> extends ComponentEvent<Network> {
+        private TNode node;
+
+        public NetworkHoverNodeEvent(Network<?,TNode, ?> source, boolean fromClient,
+                                             @EventData("event.detail.id") String nodeId) {
+            super(source, fromClient);
+            source.getNodes().stream().filter(node -> nodeId.equals(node.getId())).findFirst().ifPresent(foundedNode -> node = foundedNode);
+        }
+
+        public TNode getNode() {
+            return node;
+        }
+
+        public void setNode(TNode node) {
+            this.node = node;
+        }
+    }
+
+
+
+    @DomEvent("vcf-network-hover-edge")
+    public static class NetworkHoverEdgeEvent<TEdge extends NetworkEdge> extends ComponentEvent<Network> {
+        private TEdge edge;
+
+        public NetworkHoverEdgeEvent(Network<?, ?, TEdge> source, boolean fromClient,
+                                     @EventData("event.detail.id") String edgeId) {
+            super(source, fromClient);
+            source.getEdges().stream().filter(edge -> edgeId.equals(edge.getId())).findFirst().ifPresent(foundedEdge -> edge = foundedEdge);
+        }
+
+        public TEdge getEdge() {
+            return edge;
+        }
+
+        public void setEdge(TEdge edge) {
+            this.edge = edge;
+        }
+    }
+
 
 
 

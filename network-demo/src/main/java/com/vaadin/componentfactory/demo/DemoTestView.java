@@ -2,6 +2,7 @@ package com.vaadin.componentfactory.demo;
 
 import com.vaadin.componentfactory.Network;
 import com.vaadin.componentfactory.model.AbstractNetworkComponent;
+import com.vaadin.componentfactory.model.NetworkComponent;
 import com.vaadin.componentfactory.model.NetworkEdge;
 import com.vaadin.componentfactory.model.NetworkNode;
 import com.vaadin.flow.component.accordion.Accordion;
@@ -20,7 +21,7 @@ import com.vaadin.flow.router.Route;
 @Route("")
 public class DemoTestView extends VerticalLayout {
 
-    private Network<AbstractNetworkComponent<NetworkNode,NetworkEdge>,NetworkNode, NetworkEdge> network = new Network<AbstractNetworkComponent<NetworkNode,NetworkEdge>, NetworkNode, NetworkEdge>(null,NetworkNode.class, NetworkEdge.class);
+    private Network<NetworkComponent,NetworkNode, NetworkEdge> network = new Network<>(NetworkComponent.class,NetworkNode.class, NetworkEdge.class);
 
     // simple controls - scale and reset network
     private Button scaleButton = new Button("get scale", e -> showScaleAction());

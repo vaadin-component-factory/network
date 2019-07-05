@@ -196,6 +196,12 @@ public class ListenerTestView extends VerticalLayout {
 
         network.addNewComponentListener(e ->
                 Notification.show("New component called"));
+
+        network.addNetworkSelectionListener(event -> {
+           Notification.show("Nodes selected "+ event.getNetworkNodes());
+           Notification.show("Edges selected "+ event.getNetworkEdges());
+        });
+
         Button addEdgesButton = new Button("add edges", e ->{
                 System.out.println("adding Edge");
         for (int i = 1; i < network.getNodes().size(); i++) {
