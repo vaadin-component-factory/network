@@ -36,9 +36,6 @@ public class Network<TComponent extends AbstractNetworkComponent<TNode,TEdge>,TN
 
     private TComponent rootData;
 
-    private List<TNode> selectedNodes = new ArrayList<>();
-    private List<NetworkEdge> selectedEdges = new ArrayList<>();
-
     private final Class<TNode> nodeClass;
     private final Class<TEdge> edgeClass;
     private final Class<TComponent> componentClass;
