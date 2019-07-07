@@ -23,10 +23,7 @@ import com.vaadin.flow.component.JsonSerializable;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Node displayed on the network graph
@@ -105,25 +102,30 @@ public class NetworkNodeImpl implements NetworkNode<NetworkNodeImpl,NetworkEdgeI
         return label;
     }
 
-    private List<NetworkNodeImpl> nodes = new ArrayList<>();
+    private Map<String,NetworkNodeImpl> nodes = new HashMap<>();
 
-    private List<NetworkEdgeImpl> edges = new ArrayList<>();
+    private Map<String,NetworkEdgeImpl> edges = new HashMap<>();
 
-    public List<NetworkNodeImpl> getNodes() {
+    @Override
+    public Map<String, NetworkNodeImpl> getNodes() {
         return nodes;
     }
 
-    public void setNodes(List<NetworkNodeImpl> nodes) {
+    @Override
+    public void setNodes(Map<String, NetworkNodeImpl> nodes) {
         this.nodes = nodes;
     }
 
-    public List<NetworkEdgeImpl> getEdges() {
+    @Override
+    public Map<String, NetworkEdgeImpl> getEdges() {
         return edges;
     }
 
-    public void setEdges(List<NetworkEdgeImpl> edges) {
+    @Override
+    public void setEdges(Map<String, NetworkEdgeImpl> edges) {
         this.edges = edges;
     }
+
     @Override
     public JsonObject toJson() {
         JsonObject obj = Json.createObject();
@@ -137,8 +139,8 @@ public class NetworkNodeImpl implements NetworkNode<NetworkNodeImpl,NetworkEdgeI
             obj.put("type", getType());
         }
         // put nodes and edges
-        obj.put("nodes", NetworkConverter.convertNetworkNodeListToJsonArray(getNodes()));
-        obj.put("edges", NetworkConverter.convertNetworkEdgeListToJsonArray(getEdges()));
+        obj.put("nodes", NetworkConverter.convertNetworkNodeListToJsonArray(getNodes().values()));
+        obj.put("edges", NetworkConverter.convertNetworkEdgeListToJsonArray(getEdges().values()));
         return obj;
     }
 
@@ -153,8 +155,8 @@ public class NetworkNodeImpl implements NetworkNode<NetworkNodeImpl,NetworkEdgeI
         if (value.hasKey("type")) {
             setType(value.getString("type"));
         }
-        setNodes(NetworkConverter.convertJsonToObjectList(value.getArray("nodes"), NetworkNodeImpl.class));
-        setEdges(NetworkConverter.convertJsonToObjectList(value.getArray("edges"), NetworkEdgeImpl.class));
+        setNodes(NetworkConverter.convertJsonToNodeMap(value.getArray("nodes"), NetworkNodeImpl.class));
+        setEdges(NetworkConverter.convertJsonToEdgeMap(value.getArray("edges"), NetworkEdgeImpl.class));
         return this;
     }
 }

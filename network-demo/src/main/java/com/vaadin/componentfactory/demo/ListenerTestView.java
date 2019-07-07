@@ -57,16 +57,16 @@ public class ListenerTestView extends VerticalLayout {
         node4.setLabel("Node 4");
         node4.setX(-50);
         node4.setY(0);
-        ncomponent.getNodes().add(node4);
+        ncomponent.getNodes().put(node4.getId(),node4);
         network.addNode(ncomponent);
-
+/*
         System.out.println("adding Edge");
         for (int i = 1; i < network.getNodes().size(); i++) {
             CustomNetworkEdge networkEdge = new CustomNetworkEdge();
             networkEdge.setFrom(network.getNodes().get(i-1).getId());
             networkEdge.setTo(network.getNodes().get(i).getId());
             network.addEdge(networkEdge);
-        }
+        }*/
         network.addNetworkAfterDeleteNodesListener(event -> {
             Notification.show("Nodes deleted =" + event.getNetworkNodesId());
 
@@ -200,16 +200,17 @@ public class ListenerTestView extends VerticalLayout {
            Notification.show("Nodes selected "+ event.getNetworkNodes());
            Notification.show("Edges selected "+ event.getNetworkEdges());
         });
-
+/*
         Button addEdgesButton = new Button("add edges", e ->{
                 System.out.println("adding Edge");
+
         for (int i = 1; i < network.getNodes().size(); i++) {
             CustomNetworkEdge networkEdge = new CustomNetworkEdge();
             networkEdge.setFrom(network.getNodes().get(i-1).getId());
             networkEdge.setTo(network.getNodes().get(i).getId());
             network.addEdge(networkEdge);
-        }});
-        add(addEdgesButton);
+        }});*/
+        /*add(addEdgesButton);*/
 
         Button checkAllButton = new Button("check all", e -> {
             System.out.println(network.getRootData().toJson().toString());

@@ -27,6 +27,7 @@ import com.vaadin.flow.component.EventData;
 import elemental.json.JsonValue;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,9 +46,19 @@ public class NetworkEvent {
                                      @EventData("event.detail.edges") JsonValue edges) {
             super(source, fromClient);
             List<String> nodeIds = NetworkConverter.convertJsonToIdList(nodes);
-            networkNodes = source.getNodes().stream().filter( networkNode -> nodeIds.contains(networkNode.getId())).collect(Collectors.toList());
+            networkNodes = new ArrayList<>();
+            for (String nodeId : nodeIds) {
+                if (source.getRootData().getNodes().containsKey(nodeId)) {
+                    networkNodes.add(source.getRootData().getNodes().get(nodeId));
+                }
+            }
             List<String> edgeIds = NetworkConverter.convertJsonToIdList(edges);
-            networkEdges = source.getEdges().stream().filter( networkNode -> edgeIds.contains(networkNode.getId())).collect(Collectors.toList());
+            networkEdges = new ArrayList<>();
+            for (String edgeId : edgeIds) {
+                if (source.getRootData().getEdges().containsKey(edgeId)) {
+                    networkEdges.add(source.getRootData().getEdges().get(edgeId));
+                }
+            }
         }
 
         public List<TNode> getNetworkNodes() {
@@ -355,6 +366,10 @@ public class NetworkEvent {
                                              @EventData("event.detail.id") String nodeId) {
             super(source, fromClient);
             source.getNodes().stream().filter(node -> nodeId.equals(node.getId())).findFirst().ifPresent(foundedNode -> node = foundedNode);
+
+            if (source.getRootData().getNodes().containsKey(nodeId)){
+                node = source.getRootData().getNodes().get(nodeId);
+            }
         }
 
         public TNode getNode() {
@@ -375,7 +390,9 @@ public class NetworkEvent {
         public NetworkHoverEdgeEvent(Network<?, TEdge> source, boolean fromClient,
                                      @EventData("event.detail.id") String edgeId) {
             super(source, fromClient);
-            source.getEdges().stream().filter(edge -> edgeId.equals(edge.getId())).findFirst().ifPresent(foundedEdge -> edge = foundedEdge);
+            if (source.getRootData().getEdges().containsKey(edgeId)){
+                edge = source.getRootData().getEdges().get(edgeId);
+            }
         }
 
         public TEdge getEdge() {

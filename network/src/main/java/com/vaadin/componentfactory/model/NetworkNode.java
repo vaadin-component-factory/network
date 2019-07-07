@@ -22,6 +22,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -31,33 +32,32 @@ import java.util.UUID;
 public interface NetworkNode<TNode extends NetworkNode, TEdge> extends JsonSerializable {
 
 
-    public String getId();
+    String getId();
 
-    public void setId(String id);
+    void setId(String id);
 
-    public String getLabel();
+    String getLabel();
 
-    public void setLabel(String label);
-    public double getX();
+    void setLabel(String label);
+    double getX();
 
-    public void setX(double x);
+    void setX(double x);
 
-    public double getY();
+    double getY();
 
-    public void setY(double y);
+    void setY(double y);
 
-    public String getType();
+    String getType();
 
-    public void setType(String type);
+    void setType(String type);
 
+    Map<String,TNode> getNodes();
 
-    public List<TNode> getNodes();
+    void setNodes(Map<String,TNode> nodes);
 
-    public void setNodes(List<TNode> nodes);
+    Map<String,TEdge> getEdges();
 
-    public List<TEdge> getEdges();
-
-    public void setEdges(List<TEdge> edges);
+    void setEdges(Map<String,TEdge> edges);
 
     default JsonObject toJson() {
         JsonObject obj = Json.createObject();

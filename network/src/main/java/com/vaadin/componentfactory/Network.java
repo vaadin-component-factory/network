@@ -27,10 +27,8 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.shared.Registration;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Tag("vcf-network")
@@ -81,13 +79,9 @@ public class Network<TNode extends NetworkNode<TNode,TEdge>,TEdge extends Networ
                                 confirmed &= listener.onConfirmEvent(e);
                             }
                             if (confirmed) {
-                                List<TNode> nodeToRemove = new ArrayList<>();
-                                for (TNode node : rootData.getNodes()) {
-                                    if (e.getNetworkNodesId().contains(node.getId())) {
-                                        nodeToRemove.add(node);
-                                    }
+                                for (String id : e.getNetworkNodesId()) {
+                                    rootData.getNodes().remove(id);
                                 }
-                                rootData.getNodes().removeAll(nodeToRemove);
                                 // refresh the client side
                                 getElement().callJsFunction("confirmDeleteNodes", NetworkConverter.convertIdListToJson(e.getNetworkNodesId()));
                                 // call afterDelete
@@ -111,13 +105,9 @@ public class Network<TNode extends NetworkNode<TNode,TEdge>,TEdge extends Networ
                                 confirmed &= listener.onConfirmEvent(e);
                             }
                             if (confirmed) {
-                                List<TEdge> edgeToRemove = new ArrayList<>();
-                                for (TEdge edge : rootData.getEdges()) {
-                                    if (e.getNetworkEdgesId().contains(edge.getId())) {
-                                        edgeToRemove.add(edge);
-                                    }
+                                for (String id : e.getNetworkEdgesId()) {
+                                    rootData.getEdges().remove(id);
                                 }
-                                rootData.getEdges().removeAll(edgeToRemove);
                                 // refresh the client side
                                 getElement().callJsFunction("confirmDeleteEdges", NetworkConverter.convertIdListToJson(e.getNetworkEdgesId()));
                                 // call afterDelete
@@ -142,7 +132,9 @@ public class Network<TNode extends NetworkNode<TNode,TEdge>,TEdge extends Networ
                                 confirmed &= listener.onConfirmEvent(e);
                             }
                             if (confirmed) {
-                                rootData.getNodes().addAll(e.getNetworkNodes());
+                                for (TNode networkNode : e.getNetworkNodes()) {
+                                    rootData.getNodes().put(networkNode.getId(),networkNode);
+                                }
                                 // refresh the client side
                                 getElement().callJsFunction("confirmAddNodes", NetworkConverter.convertNetworkNodeListToJsonArray(e.getNetworkNodes()));
                                 if (afterNewNodesListener != null) {
@@ -165,7 +157,7 @@ public class Network<TNode extends NetworkNode<TNode,TEdge>,TEdge extends Networ
                                 confirmed &= listener.onConfirmEvent(e);
                             }
                             if (confirmed) {
-                                rootData.getEdges().addAll(e.getNetworkEdges());
+                                rootData.getEdges().putAll(e.getNetworkEdges().stream().collect(Collectors.toMap(TEdge::getId, edge -> edge)));
                                 // refresh the client side
                                 getElement().callJsFunction("confirmAddEdges", NetworkConverter.convertNetworkEdgeListToJsonArray(e.getNetworkEdges()));
                                 // call afterNew
@@ -190,8 +182,9 @@ public class Network<TNode extends NetworkNode<TNode,TEdge>,TEdge extends Networ
                             }
                             if (confirmed) {
                                 // Remove all the nodes with the same id and replace it with the updated nodes
-                                rootData.getNodes().removeAll(e.getNetworkNodes());
-                                rootData.getNodes().addAll(e.getNetworkNodes());
+                                for (TNode networkNode : e.getNetworkNodes()) {
+                                    rootData.getNodes().put(networkNode.getId(),networkNode);
+                                }
                                 // refresh the client side
                                 getElement().callJsFunction("confirmUpdateNodes", NetworkConverter.convertNetworkNodeListToJsonArray(e.getNetworkNodes()));
                             }
@@ -211,8 +204,9 @@ public class Network<TNode extends NetworkNode<TNode,TEdge>,TEdge extends Networ
                             }
                             if (confirmed) {
                                 // Remove all the nodes with the same id and replace it with the updated nodes
-                                rootData.getEdges().removeAll(e.getNetworkEdges());
-                                rootData.getEdges().addAll(e.getNetworkEdges());
+                                for (TEdge networkEdge : e.getNetworkEdges()) {
+                                    rootData.getEdges().put(networkEdge.getId(),networkEdge);
+                                }
                                 // refresh the client side
                                 getElement().callJsFunction("confirmUpdateEdges", NetworkConverter.convertNetworkEdgeListToJsonArray(e.getNetworkEdges()));
                             }
@@ -294,8 +288,8 @@ public class Network<TNode extends NetworkNode<TNode,TEdge>,TEdge extends Networ
         return getElement().getProperty("scale", 1.33);
     }
 
-    public List<TNode> getNodes() {
-        return rootData.getNodes();
+    public Collection<TNode> getNodes() {
+        return rootData.getNodes().values();
     }
     /**
      * Add a new Network node
@@ -309,7 +303,9 @@ public class Network<TNode extends NetworkNode<TNode,TEdge>,TEdge extends Networ
     }
 
     public void addNodes(List<TNode> networkNodes){
-        rootData.getNodes().addAll(networkNodes);
+        for (TNode networkNode : networkNodes) {
+            rootData.getNodes().put(networkNode.getId(),networkNode);
+        }
         getElement().callJsFunction("confirmAddNodes", NetworkConverter.convertNetworkNodeListToJsonArray(networkNodes));
     }
 
@@ -322,7 +318,9 @@ public class Network<TNode extends NetworkNode<TNode,TEdge>,TEdge extends Networ
 
     // duplicate the client side logic into this function
     public void deleteNodes(List<TNode> nodes){
-        rootData.getNodes().removeAll(nodes);
+        for (TNode node : nodes) {
+            rootData.getNodes().remove(node);
+        }
         getElement().callJsFunction("confirmDeleteNodes", networkConverter.convertNetworkNodeListToJsonArrayOfIds(nodes));
     }
 
@@ -353,7 +351,9 @@ public class Network<TNode extends NetworkNode<TNode,TEdge>,TEdge extends Networ
     }
 
     public void addEdges(List<TEdge> networkEdges){
-        rootData.getEdges().addAll(networkEdges);
+        for (TEdge networkEdge : networkEdges) {
+            rootData.getEdges().put(networkEdge.getId(),networkEdge);
+        }
         getElement().callJsFunction("confirmAddEdges", NetworkConverter.convertNetworkEdgeListToJsonArray(networkEdges));
     }
 
@@ -370,7 +370,9 @@ public class Network<TNode extends NetworkNode<TNode,TEdge>,TEdge extends Networ
 
     // duplicate the client side logic into this function
     public void deleteEdges(List<TEdge> edges){
-        rootData.getEdges().removeAll(edges);
+        for (TEdge edge : edges) {
+            rootData.getEdges().remove(edge.getId());
+        }
         getElement().callJsFunction("confirmDeleteEdges", networkConverter.convertNetworkEdgeListToJsonArrayOfIds(edges));
     }
     /**
@@ -379,12 +381,12 @@ public class Network<TNode extends NetworkNode<TNode,TEdge>,TEdge extends Networ
      *
      * @param nodes list of nodes
      */
-    public void createComponent(List<TNode> nodes) {
+    public void createComponent(Collection<TNode> nodes) {
         // getElement().callJsFunction("select", NetworkConverter.convertNetworkNodeListToJsonArrayOfIds(nodes));
     }
 
-    public List<TEdge> getEdges() {
-        return rootData.getEdges();
+    public Collection<TEdge> getEdges() {
+        return rootData.getEdges().values();
     }
 
     /**
@@ -393,7 +395,7 @@ public class Network<TNode extends NetworkNode<TNode,TEdge>,TEdge extends Networ
      * @param networkNodes list of network nodes
      * @param networkEdges list of network edges
      */
-    public void select(List<TNode> networkNodes, List<TEdge> networkEdges){
+    public void select(Collection<TNode> networkNodes, Collection<TEdge> networkEdges){
         getElement().callJsFunction("select", networkConverter.convertNetworkNodeListToJsonArrayOfIds(networkNodes), networkConverter.convertNetworkEdgeListToJsonArrayOfIds(networkEdges));
     }
     /**

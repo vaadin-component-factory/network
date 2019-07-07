@@ -6,10 +6,7 @@ import com.vaadin.flow.component.JsonSerializable;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class CustomNetworkNode implements NetworkNode<CustomNetworkNode,CustomNetworkEdge> {
 
@@ -85,23 +82,27 @@ public class CustomNetworkNode implements NetworkNode<CustomNetworkNode,CustomNe
         return label;
     }
 
-    private List<CustomNetworkNode> nodes = new ArrayList<>();
+    private Map<String,CustomNetworkNode> nodes = new HashMap<>();
 
-    private List<CustomNetworkEdge> edges = new ArrayList<>();
+    private Map<String,CustomNetworkEdge> edges = new HashMap<>();
 
-    public List<CustomNetworkNode> getNodes() {
+    @Override
+    public Map<String, CustomNetworkNode> getNodes() {
         return nodes;
     }
 
-    public void setNodes(List<CustomNetworkNode> nodes) {
+    @Override
+    public void setNodes(Map<String, CustomNetworkNode> nodes) {
         this.nodes = nodes;
     }
 
-    public List<CustomNetworkEdge> getEdges() {
+    @Override
+    public Map<String, CustomNetworkEdge> getEdges() {
         return edges;
     }
 
-    public void setEdges(List<CustomNetworkEdge> edges) {
+    @Override
+    public void setEdges(Map<String, CustomNetworkEdge> edges) {
         this.edges = edges;
     }
 
@@ -129,8 +130,8 @@ public class CustomNetworkNode implements NetworkNode<CustomNetworkNode,CustomNe
             obj.put("custom-field", getCustomField());
         }
         // put nodes and edges
-        obj.put("nodes", NetworkConverter.convertNetworkNodeListToJsonArray(getNodes()));
-        obj.put("edges", NetworkConverter.convertNetworkEdgeListToJsonArray(getEdges()));
+        obj.put("nodes", NetworkConverter.convertNetworkNodeListToJsonArray(getNodes().values()));
+        obj.put("edges", NetworkConverter.convertNetworkEdgeListToJsonArray(getEdges().values()));
         return obj;
     }
 
@@ -148,8 +149,8 @@ public class CustomNetworkNode implements NetworkNode<CustomNetworkNode,CustomNe
         if (value.hasKey("custom-field")) {
             setCustomField(value.getString("custom-field"));
         }
-        setNodes(NetworkConverter.convertJsonToObjectList(value.getArray("nodes"), CustomNetworkNode.class));
-        setEdges(NetworkConverter.convertJsonToObjectList(value.getArray("edges"), CustomNetworkEdge.class));
+        setNodes(NetworkConverter.convertJsonToNodeMap(value.getArray("nodes"), CustomNetworkNode.class));
+        setEdges(NetworkConverter.convertJsonToEdgeMap(value.getArray("edges"), CustomNetworkEdge.class));
         return this;
     }
 

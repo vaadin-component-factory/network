@@ -26,8 +26,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class NetworkConverter<TNode extends NetworkNode<TNode,TEdge>,TEdge extends NetworkEdge> {
     private final Class<TNode> nodeClass;
@@ -38,31 +37,39 @@ public class NetworkConverter<TNode extends NetworkNode<TNode,TEdge>,TEdge exten
         this.edgeClass = edgeClass;
     }
 
-    public static JsonArray convertNetworkNodeListToJsonArray(List<? extends JsonSerializable> networkNodes) {
+    public static JsonArray convertNetworkNodeListToJsonArray(Collection<? extends JsonSerializable> networkNodes) {
         JsonArray array = Json.createArray();
-        for (int i = 0; i < networkNodes.size(); i++) {
-            array.set(i, networkNodes.get(i).toJson());
+        int i = 0;
+        for (JsonSerializable networkNode : networkNodes) {
+            array.set(i, networkNode.toJson());
+            i++;
         }
         return array;
     }
-    public static JsonArray convertNetworkEdgeListToJsonArray(List<? extends JsonSerializable> networkEdges) {
+    public static JsonArray convertNetworkEdgeListToJsonArray(Collection<? extends JsonSerializable> networkEdges) {
         JsonArray array = Json.createArray();
-        for (int i = 0; i < networkEdges.size(); i++) {
-            array.set(i, networkEdges.get(i).toJson());
+        int i = 0;
+        for (JsonSerializable networkEdge : networkEdges) {
+            array.set(i,networkEdge.toJson());
+            i++;
         }
         return array;
     }
-    public JsonArray convertNetworkNodeListToJsonArrayOfIds(List<TNode> networkNodes) {
+    public JsonArray convertNetworkNodeListToJsonArrayOfIds(Collection<TNode> networkNodes) {
         JsonArray array = Json.createArray();
-        for (int i = 0; i < networkNodes.size(); i++) {
-            array.set(i, networkNodes.get(i).getId());
+        int i = 0;
+        for (TNode networkNode : networkNodes) {
+            array.set(i,networkNode.getId());
+            i++;
         }
         return array;
     }
-    public JsonArray convertNetworkEdgeListToJsonArrayOfIds(List<TEdge> networkEdges) {
+    public JsonArray convertNetworkEdgeListToJsonArrayOfIds(Collection<TEdge> networkEdges) {
         JsonArray array = Json.createArray();
-        for (int i = 0; i < networkEdges.size(); i++) {
-            array.set(i, networkEdges.get(i).getId());
+        int i = 0;
+        for (TEdge networkEdge : networkEdges) {
+            array.set(i,networkEdge.getId());
+            i++;
         }
         return array;
     }
@@ -115,6 +122,91 @@ public class NetworkConverter<TNode extends NetworkNode<TNode,TEdge>,TEdge exten
     public List<TEdge> convertJsonToNetworkEdgeList(JsonValue value) {
         return convertJsonToObjectList(value, edgeClass);
     }
+
+    public static <T extends NetworkNode> Map<String,T> convertJsonToNodeMap(JsonValue value, Class<T> tClass) {
+        HashMap<String, T> map = new HashMap<>();
+        if (value instanceof JsonArray) {
+            JsonArray array = (JsonArray)  value;
+            for (int i = 0; i < array.length(); i++) {
+                try {
+                    T node = tClass.getDeclaredConstructor().newInstance();
+                    node.readJson(array.getObject(i));
+                    map.put(node.getId(),node);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else if (value instanceof JsonObject){
+            JsonObject jsonObject = (JsonObject)  value;
+            if (jsonObject.hasKey("x")){
+                // its an item
+                try {
+                    T node = tClass.getDeclaredConstructor().newInstance();
+                    node.readJson(jsonObject);
+                    map.put(node.getId(),node);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                // its a map of nodes
+                for (String id : jsonObject.keys()) {
+                    JsonObject jsonNode = jsonObject.getObject(id);
+                    try {
+                        T node = tClass.getDeclaredConstructor().newInstance();
+                        node.readJson(jsonNode);
+                        map.put(node.getId(),node);
+                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return map;
+    }
+
+
+
+    public static <T extends NetworkEdge> Map<String,T> convertJsonToEdgeMap(JsonValue value, Class<T> tClass) {
+        HashMap<String, T> map = new HashMap<>();
+        if (value instanceof JsonArray) {
+            JsonArray array = (JsonArray)  value;
+            for (int i = 0; i < array.length(); i++) {
+                try {
+                    T node = tClass.getDeclaredConstructor().newInstance();
+                    node.readJson(array.getObject(i));
+                    map.put(node.getId(),node);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else if (value instanceof JsonObject){
+            JsonObject jsonObject = (JsonObject)  value;
+            if (jsonObject.hasKey("from")){
+                // its an item
+                try {
+                    T node = tClass.getDeclaredConstructor().newInstance();
+                    node.readJson(jsonObject);
+                    map.put(node.getId(),node);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                // its a map of nodes
+                for (String id : jsonObject.keys()) {
+                    JsonObject jsonNode = jsonObject.getObject(id);
+                    try {
+                        T node = tClass.getDeclaredConstructor().newInstance();
+                        node.readJson(jsonNode);
+                        map.put(node.getId(),node);
+                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return map;
+    }
+
 
 
     public static List<String> convertJsonToIdList(JsonValue jsonValue) {
