@@ -33,6 +33,9 @@ import java.util.UUID;
  */
 public interface NetworkNode<TNode extends NetworkNode, TEdge> extends JsonSerializable {
 
+    String INPUT_TYPE = "input";
+    String OUTPUT_TYPE = "output";
+    String COMPONENT_TYPE = "component";
 
     String getId();
 

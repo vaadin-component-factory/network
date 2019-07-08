@@ -372,6 +372,7 @@ class VcfNetwork extends ElementMixin(ThemableMixin(PolymerElement)) {
         this.$.infopanel._updateCoords(opt);
       } else {
         this.$.infopanel._refreshCoords(opt, x, y);
+        this.$.infopanel._selectionChanged(opt);
       }
     }
   });

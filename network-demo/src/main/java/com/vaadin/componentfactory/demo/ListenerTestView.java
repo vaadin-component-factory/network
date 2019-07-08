@@ -4,11 +4,14 @@ import com.vaadin.componentfactory.Network;
 import com.vaadin.componentfactory.demo.data.CustomNetworkEdge;
 import com.vaadin.componentfactory.demo.data.CustomNetworkNode;
 import com.vaadin.componentfactory.model.NetworkEdge;
+import com.vaadin.componentfactory.model.NetworkNode;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +32,7 @@ public class ListenerTestView extends VerticalLayout {
         node.setLabel("Node 1");
         node.setX(-150);
         node.setY(-80);
-        node.setType("input");
+        node.setType(NetworkNode.INPUT_TYPE);
         network.addNode(node);
 
 
@@ -186,9 +189,6 @@ public class ListenerTestView extends VerticalLayout {
             return true;
         });
 
-        network.addNewComponentListener(e ->
-                Notification.show("New component called"));
-
         network.addNetworkSelectionListener(event -> {
            Notification.show("Nodes selected "+ event.getNetworkNodes());
            Notification.show("Edges selected "+ event.getNetworkEdges());
@@ -207,11 +207,10 @@ public class ListenerTestView extends VerticalLayout {
                 }
                 previousNode1 = networkNode;
             }});
-        add(addEdgesButton);
 
         Button checkAllButton = new Button("check all", e -> {
             System.out.println(network.getRootData().toJson().toString());
-            Notification.show(" rootdata ");
+            Notification.show("Rootdata displayed in the log ");
         });
         Button checkNodesListButton = new Button("check nodes list", e -> {
             System.out.println("node list "+ network.getNodes());
@@ -222,8 +221,100 @@ public class ListenerTestView extends VerticalLayout {
             System.out.println("edge list "+ network.getEdges());
             Notification.show("edges "+ network.getEdges());
         });
-        add(checkAllButton,checkNodesListButton, checkEdgesListButton);
-       // network.addNetworkDeleteEdgesListener(event -> Notification.show("Edges deleted =" + event.getNetworkEdgesId()));
+        add(new HorizontalLayout(addEdgesButton, checkAllButton,checkNodesListButton, checkEdgesListButton));
+
+        network.addNewComponentListener(e -> createComponent(e.getNetworkNodes()));
+    }
+
+    /**
+     * Check if nodes are linked to an external node then block the process if
+     *
+     * - remove all the selected nodes from the current Data
+     * - remove all the edges linked to this nodes from the current Data
+     * - create a new component node
+     *   - add all the selected nodes into the component
+     *   - add all the inner edges
+     *   - add a input/output node if there is no input/output node
+     *
+     * @param networkNodes selected nodes
+     */
+    private void createComponent(List<CustomNetworkNode> networkNodes) {
+        if (networkNodes.isEmpty()) {
+            Notification.show("No node selected");
+        } else {
+            List<String> ids = networkNodes.stream().map(CustomNetworkNode::getId).collect(Collectors.toList());
+
+            List<CustomNetworkEdge> edges = new ArrayList<>();
+
+            boolean innerLinkedToOuter = false;
+            for (CustomNetworkEdge edge : network.getCurrentData().getEdges().values()) {
+                boolean nodeFromInner = ids.contains(edge.getFrom());
+                boolean nodeToInner = ids.contains(edge.getTo());
+                // edge is inner --> OK OR edge is outer
+                if ((nodeFromInner && nodeToInner) || (!nodeFromInner && !nodeToInner)) {
+                    innerLinkedToOuter = false;
+                    // the edge is an inner edge
+                    if (nodeFromInner)
+                        edges.add(edge);
+                } else {
+                    innerLinkedToOuter = true;
+                }
+                if (innerLinkedToOuter) {
+                    break;
+                }
+            }
+            if (innerLinkedToOuter) {
+                // error
+                Notification.show("Some nodes are linked to outer nodes, please select not connected nodes");
+            } else {
+                // ok
+                // remove edges and put it into the new component
+                CustomNetworkNode component = new CustomNetworkNode();
+                component.setLabel("New component");
+                component.setType("component");
+                // create a component as the same position of the 1st node
+                component.setX(networkNodes.get(0).getX());
+                component.setY(networkNodes.get(0).getY());
+                network.deleteNodes(networkNodes);
+                boolean hasInput = false;
+                boolean hasOutput = false;
+                for (CustomNetworkNode networkNode : networkNodes) {
+                    component.getNodes().put(networkNode.getId(),networkNode);
+                    if (CustomNetworkNode.INPUT_TYPE.equals(networkNode.getType())){
+                        hasInput = true;
+                    }
+                    if (CustomNetworkNode.OUTPUT_TYPE.equals(networkNode.getType())){
+                        hasOutput = true;
+                    }
+                }
+                network.deleteEdges(edges);
+                for (CustomNetworkEdge edge : edges) {
+                    component.getEdges().put(edge.getId(),edge);
+                }
+
+                // add input node if needed
+
+                if (!hasInput) {
+                    CustomNetworkNode inputNode = new CustomNetworkNode();
+                    inputNode.setLabel("input");
+                    inputNode.setType(NetworkNode.INPUT_TYPE);
+                    inputNode.setX(-250);
+                    component.getNodes().put(inputNode.getId(),inputNode);
+                }
+                // add output node if needed
+                if (!hasOutput) {
+                    CustomNetworkNode outputNode = new CustomNetworkNode();
+                    outputNode.setLabel("output");
+                    outputNode.setType(NetworkNode.OUTPUT_TYPE);
+                    component.getNodes().put(outputNode.getId(),outputNode);
+                }
+
+                network.addNode(component);
+            }
+
+        }
+
+
     }
 
 }
