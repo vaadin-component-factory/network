@@ -4,7 +4,7 @@ It provides an easy way to display breadcrumb on web pages.
 
 [Live Demo ↗](https://incubator.app.fi/network-demo/network)
 
-[<img src="https://raw.githubusercontent.com/vaadin-component-factory/network/master/screenshot.png" width="400" alt="Screenshot of network">](https://vaadin.com/directory/components/network)
+[<img src="https://raw.githubusercontent.com/vaadin-component-factory/network/master/screenshot.png" alt="Screenshot of network">](https://vaadin.com/directory/components/network)
 
 
 ## Usage
