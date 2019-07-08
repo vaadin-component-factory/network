@@ -1,8 +1,8 @@
 package com.vaadin.componentfactory.demo;
 
 import com.vaadin.componentfactory.Network;
-import com.vaadin.componentfactory.demo.data.NetworkEdgeImpl;
-import com.vaadin.componentfactory.demo.data.NetworkNodeImpl;
+import com.vaadin.componentfactory.model.NetworkEdgeImpl;
+import com.vaadin.componentfactory.model.NetworkNodeImpl;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.router.Route;

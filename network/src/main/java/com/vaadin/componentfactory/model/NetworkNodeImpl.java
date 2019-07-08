@@ -1,4 +1,4 @@
-package com.vaadin.componentfactory.demo.data;
+package com.vaadin.componentfactory.model;
 
 /*
  * #%L
@@ -18,7 +18,6 @@ package com.vaadin.componentfactory.demo.data;
  */
 
 import com.vaadin.componentfactory.converter.NetworkConverter;
-import com.vaadin.componentfactory.model.NetworkNode;
 import com.vaadin.flow.component.JsonSerializable;
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -27,6 +26,7 @@ import java.util.*;
 
 /**
  * Node displayed on the network graph
+ * The simplest implementation of a Network Node
  */
 public class NetworkNodeImpl implements NetworkNode<NetworkNodeImpl,NetworkEdgeImpl> {
 

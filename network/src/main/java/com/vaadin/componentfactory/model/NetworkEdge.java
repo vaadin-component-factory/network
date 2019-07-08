@@ -25,7 +25,9 @@ import elemental.json.JsonObject;
 import java.util.UUID;
 
 /**
- * link between 2 nodes
+ * Interface for edge between 2 nodes.
+ * from, to and id are required
+ * id should be unique in the entire network and not null
  */
 public interface NetworkEdge extends JsonSerializable {
 
@@ -59,6 +61,10 @@ public interface NetworkEdge extends JsonSerializable {
     void setTo(String to);
 
 
+    /**
+     *
+     * @return json object
+     */
     default JsonObject toJson() {
         JsonObject obj = Json.createObject();
         if (getId() != null) {

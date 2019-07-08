@@ -1,6 +1,6 @@
 package com.vaadin.componentfactory.demo.data;
 
-import com.vaadin.componentfactory.model.NetworkEdge;
+import com.vaadin.componentfactory.model.NetworkEdgeImpl;
 import com.vaadin.flow.component.JsonSerializable;
 import elemental.json.JsonObject;
 

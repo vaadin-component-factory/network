@@ -28,6 +28,8 @@ import java.util.UUID;
 
 /**
  * Node displayed on the network graph
+ * id should be unique in the entire network and not null
+ * nodes and edges should not be null
  */
 public interface NetworkNode<TNode extends NetworkNode, TEdge> extends JsonSerializable {
 
@@ -86,6 +88,12 @@ public interface NetworkNode<TNode extends NetworkNode, TEdge> extends JsonSeria
         return this;
     }
 
+    /**
+     * retrieve the node recursively inside the children
+     *
+     * @param id id of the node
+     * @return node tih the id
+     */
     default TNode findNodeById(String id) {
         if (getNodes().containsKey(id)){
             return getNodes().get(id);

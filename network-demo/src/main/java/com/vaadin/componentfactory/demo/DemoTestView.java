@@ -1,8 +1,8 @@
 package com.vaadin.componentfactory.demo;
 
 import com.vaadin.componentfactory.Network;
-import com.vaadin.componentfactory.demo.data.NetworkEdgeImpl;
-import com.vaadin.componentfactory.demo.data.NetworkNodeImpl;
+import com.vaadin.componentfactory.model.NetworkEdgeImpl;
+import com.vaadin.componentfactory.model.NetworkNodeImpl;
 import com.vaadin.componentfactory.model.NetworkNode;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
@@ -55,17 +55,12 @@ public class DemoTestView extends VerticalLayout {
 
     private Button deleteEdgeButton = new Button("Delete edge", event -> deleteEdgeAction());
 
-    private Button createComponentButton = new Button("Create component", event -> createComponentAction());
-
     private Button selectAllButton= new Button("select all", event -> selectAllAction());
 
     private void selectAllAction() {
         network.select(network.getNodes(),network.getEdges());
     }
 
-    private void createComponentAction() {
-        network.createComponent(network.getNodes());
-    }
 
     public DemoTestView() {
         network.setWidthFull();
@@ -79,7 +74,7 @@ public class DemoTestView extends VerticalLayout {
         HorizontalLayout scaleLayout = new HorizontalLayout(scaleButton,scale, setScaleButton);
         scaleLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
         accordion.add("Scale",scaleLayout);
-        HorizontalLayout selectNodeLayout = new HorizontalLayout(nodeComboBox, selectNodeButton, newNodeButton, refreshComboboxButton, createComponentButton, selectAllButton);
+        HorizontalLayout selectNodeLayout = new HorizontalLayout(nodeComboBox, selectNodeButton, newNodeButton, refreshComboboxButton, selectAllButton);
         selectNodeLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
 
         HorizontalLayout nodeFormLayout = new HorizontalLayout(nodeUuid, nodeName,x,y, addNodeButton, deleteNodeButton);

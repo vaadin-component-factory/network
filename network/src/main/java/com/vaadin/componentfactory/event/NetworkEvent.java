@@ -31,6 +31,10 @@ import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 
+/**
+ * Class for creating event types for Network
+ *
+ */
 public class NetworkEvent {
 
     private static final String EVENT_PREVENT_DEFAULT_JS = "event.preventDefault()";
@@ -86,7 +90,7 @@ public class NetworkEvent {
                                        @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
             super(source, fromClient);
 
-            networkNodes = source.getNetworkConverter().convertJsonToObjectList(items);
+            networkNodes = source.getNetworkConverter().convertJsonToNodeList(items);
         }
 
         public List<TNode> getNetworkNodes() {
@@ -129,7 +133,7 @@ public class NetworkEvent {
                                     @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
             super(source, fromClient);
 
-            networkNodes = source.getNetworkConverter().convertJsonToObjectList(items);
+            networkNodes = source.getNetworkConverter().convertJsonToNodeList(items);
         }
 
         public NetworkAfterNewNodesEvent(Network<TNode, ?> source,
@@ -296,7 +300,7 @@ public class NetworkEvent {
                                     @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
             super(source, fromClient);
 
-            networkNodes = source.getNetworkConverter().convertJsonToObjectList(items);
+            networkNodes = source.getNetworkConverter().convertJsonToNodeList(items);
         }
 
         public List<TNode> getNetworkNodes() {

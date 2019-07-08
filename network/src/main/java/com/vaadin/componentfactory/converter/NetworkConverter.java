@@ -28,6 +28,12 @@ import elemental.json.JsonValue;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
+/**
+ * Network Converter to convert TNode/TEdge from/to JsonValue
+ *
+ * @param <TNode> Node type
+ * @param <TEdge> Edge type
+ */
 public class NetworkConverter<TNode extends NetworkNode<TNode,TEdge>,TEdge extends NetworkEdge> {
     private final Class<TNode> nodeClass;
     private final Class<TEdge> edgeClass;
@@ -37,6 +43,12 @@ public class NetworkConverter<TNode extends NetworkNode<TNode,TEdge>,TEdge exten
         this.edgeClass = edgeClass;
     }
 
+    /**
+     * Convert node list to json array
+     *
+     * @param networkNodes list of nodes
+     * @return Jsonarray of nodes
+     */
     public static JsonArray convertNetworkNodeListToJsonArray(Collection<? extends JsonSerializable> networkNodes) {
         JsonArray array = Json.createArray();
         int i = 0;
@@ -46,6 +58,13 @@ public class NetworkConverter<TNode extends NetworkNode<TNode,TEdge>,TEdge exten
         }
         return array;
     }
+
+    /**
+     * Convert edge list to json array
+     *
+     * @param networkEdges list of edges
+     * @return Jsonarray of edges
+     */
     public static JsonArray convertNetworkEdgeListToJsonArray(Collection<? extends JsonSerializable> networkEdges) {
         JsonArray array = Json.createArray();
         int i = 0;
@@ -74,7 +93,7 @@ public class NetworkConverter<TNode extends NetworkNode<TNode,TEdge>,TEdge exten
         return array;
     }
 
-    public List<TNode> convertJsonToObjectList(JsonValue value) {
+    public List<TNode> convertJsonToNodeList(JsonValue value) {
         return convertJsonToObjectList(value, nodeClass);
     }
 

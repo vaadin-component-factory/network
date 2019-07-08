@@ -1,8 +1,8 @@
 package com.vaadin.componentfactory.demo;
 
 import com.vaadin.componentfactory.Network;
-import com.vaadin.componentfactory.demo.data.NetworkEdgeImpl;
-import com.vaadin.componentfactory.demo.data.NetworkNodeImpl;
+import com.vaadin.componentfactory.model.NetworkEdgeImpl;
+import com.vaadin.componentfactory.model.NetworkNodeImpl;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;

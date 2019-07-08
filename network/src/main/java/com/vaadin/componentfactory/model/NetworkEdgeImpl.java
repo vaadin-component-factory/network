@@ -1,4 +1,4 @@
-package com.vaadin.componentfactory.demo.data;
+package com.vaadin.componentfactory.model;
 
 /*
  * #%L
@@ -27,13 +27,13 @@ import java.util.UUID;
 
 /**
  * link between 2 nodes
+ * The simplest implementation of a Network Edge
  */
 public class NetworkEdgeImpl implements NetworkEdge {
 
     private UUID id;
     private String from;
     private String to;
-
 
     public String getId() {
         if (id == null){

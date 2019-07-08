@@ -30,14 +30,30 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
+/**
+ * Network main class.
+ * Java Wrapper for the vcf-network component
+ *
+ * @param <TNode> Node type
+ * @param <TEdge> Edge type
+ */
 @Tag("vcf-network")
 @JsModule("./src/vcf-network.js")
 public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends NetworkEdge> extends Component implements HasSize, HasTheme {
 
+    private TNode rootData;
+    /**
+     * current data displayed , by default it's the rootData
+     **/
+    private TNode currentData;
+
     private final Class<TNode> nodeClass;
     private final Class<TEdge> edgeClass;
+
     private final NetworkConverter<TNode, TEdge> networkConverter;
+
+    private NetworkNodeEditor<TNode, TEdge> nodeEditor;
+
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkDeleteNodesEvent>> deleteNodesListeners = new LinkedHashSet<>();
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkDeleteEdgesEvent>> deleteEdgesListeners = new LinkedHashSet<>();
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent<TNode, TEdge>>> newNodesListeners = new LinkedHashSet<>();
@@ -45,16 +61,11 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode, TEdge>>> updateNodesListeners = new LinkedHashSet<>();
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateEdgesEvent<TEdge>>> updateEdgesListeners = new LinkedHashSet<>();
     private final Set<ComponentEventListener<NetworkEvent.NetworkNewComponentEvent<TNode,TEdge>>> newComponentListeners = new LinkedHashSet<>();
-    private TNode rootData;
-    /**
-     * current data displayed , by default it's the rootData
-     **/
-    private TNode currentData;
     private ComponentEventListener<NetworkEvent.NetworkAfterDeleteNodesEvent> afterDeleteNodesListener;
     private ComponentEventListener<NetworkEvent.NetworkAfterNewNodesEvent<TNode, TEdge>> afterNewNodesListener;
     private ComponentEventListener<NetworkEvent.NetworkAfterDeleteEdgesEvent> afterDeleteEdgesListener;
     private ComponentEventListener<NetworkEvent.NetworkAfterNewEdgesEvent<TEdge>> afterNewEdgesListener;
-    private NetworkNodeEditor<TNode, TEdge> nodeEditor;
+
 
     public Network(Class<TNode> nodeClass, Class<TEdge> edgeClass) {
         this.nodeClass = nodeClass;
@@ -268,12 +279,17 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         getElement().setProperty("scale", scale);
     }
 
+    /**
+     *
+     * @return list of nodes
+     */
     public Collection<TNode> getNodes() {
         return currentData.getNodes().values();
     }
 
     /**
      * Add a new Network node
+     * If you want to add multiple nodes then call {@link #addNodes(List)}
      *
      * @param node the node to add
      */
@@ -283,6 +299,11 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         addNodes(nodes);
     }
 
+    /**
+     * Add all the nodes in the network
+     *
+     * @param networkNodes nodes to add
+     */
     public void addNodes(List<TNode> networkNodes) {
         for (TNode networkNode : networkNodes) {
             currentData.getNodes().put(networkNode.getId(), networkNode);
@@ -290,14 +311,23 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         getElement().callJsFunction("confirmAddNodes", NetworkConverter.convertNetworkNodeListToJsonArray(networkNodes));
     }
 
-    // Call vcf-network-delete
+    /**
+     * remove the node from the network
+     * If you want to remove multiple nodes then call {@link #deleteNodes(List)}
+     *
+     * @param node node to delete
+     */
     public void deleteNode(TNode node) {
         List<TNode> nodes = new ArrayList<>();
         nodes.add(node);
         deleteNodes(nodes);
     }
 
-    // duplicate the client side logic into this function
+    /**
+     * remove all the nodes from the network
+     *
+     * @param nodes nodes to delete
+     */
     public void deleteNodes(List<TNode> nodes) {
         for (TNode node : nodes) {
             currentData.getNodes().remove(node.getId());
@@ -307,6 +337,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
 
     /**
      * Update the node attributes
+     * If you want to update multiple nodes then call {@link #updateNodes(List)}
      *
      * @param node node to be updated
      */
@@ -316,6 +347,11 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         updateNodes(nodes);
     }
 
+    /**
+     * Update the node attributes
+     *
+     * @param networkNodes nodes to update
+     */
     public void updateNodes(List<TNode> networkNodes) {
         getElement().callJsFunction("confirmUpdateNodes", NetworkConverter.convertNetworkNodeListToJsonArray(networkNodes));
     }
@@ -332,6 +368,11 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         addEdges(edges);
     }
 
+    /**
+     * Add all the edges in the network
+     *
+     * @param networkEdges edges to add
+     */
     public void addEdges(List<TEdge> networkEdges) {
         for (TEdge networkEdge : networkEdges) {
             currentData.getEdges().put(networkEdge.getId(), networkEdge);
@@ -341,6 +382,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
 
     /**
      * Delete the edge with the same id
+     * If you want to remove multiple edges then call {@link #deleteEdges(List)}
      *
      * @param edge edge to delete
      */
@@ -350,7 +392,11 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         deleteEdges(edges);
     }
 
-    // duplicate the client side logic into this function
+    /**
+     * Delete the edges with the same id
+     *
+     * @param edges list of edges
+     */
     public void deleteEdges(List<TEdge> edges) {
         for (TEdge edge : edges) {
             currentData.getEdges().remove(edge.getId());
@@ -358,12 +404,16 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         getElement().callJsFunction("confirmDeleteEdges", networkConverter.convertNetworkEdgeListToJsonArrayOfIds(edges));
     }
 
+    /**
+     *
+     * @return list of edges
+     */
     public Collection<TEdge> getEdges() {
         return currentData.getEdges().values();
     }
 
     /**
-     * Select the elements
+     * Select the elements with the same id
      *
      * @param networkNodes list of network nodes
      * @param networkEdges list of network edges
@@ -381,15 +431,15 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
     }
 
     /**
-     * Change the currentData
+     * Change the currentData context
      *
-     * @param id id of the node
+     * @param id id of the context node
      */
     private void navigateTo(String id){
-        // check if the user double-click on a node (in the node list of the current Data)
+        // no id so it's root data
         if (id == null) {
-            // no id so it's root data
             currentData = rootData;
+            // check if the user double-click on a node (in the node list of the current Data)
         } else if (currentData.getNodes().containsKey(id)){
             currentData = currentData.getNodes().get(id);
         } else {
@@ -402,6 +452,11 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         }
     }
 
+    /**
+     * Add a custom editor and remove the default behaviour
+     *
+     * @param editor custom editor for a node
+     */
     @SuppressWarnings("unchecked")
     public void addNodeEditor(NetworkNodeEditor<TNode, TEdge> editor) {
         this.nodeEditor = editor;
@@ -437,6 +492,8 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
                 })
         );
     }
+
+    // ALL THE LISTENERS
 
     public Registration addDeleteNodesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkDeleteNodesEvent> listener) {
         deleteNodesListeners.add(listener);

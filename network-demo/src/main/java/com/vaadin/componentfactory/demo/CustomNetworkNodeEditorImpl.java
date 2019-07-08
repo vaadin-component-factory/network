@@ -2,8 +2,6 @@ package com.vaadin.componentfactory.demo;
 
 import com.vaadin.componentfactory.demo.data.CustomNetworkEdge;
 import com.vaadin.componentfactory.demo.data.CustomNetworkNode;
-import com.vaadin.componentfactory.demo.data.NetworkEdgeImpl;
-import com.vaadin.componentfactory.demo.data.NetworkNodeImpl;
 import com.vaadin.componentfactory.editor.NetworkNodeEditor;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.formlayout.FormLayout;
