@@ -85,4 +85,19 @@ public interface NetworkNode<TNode extends NetworkNode, TEdge> extends JsonSeria
         }
         return this;
     }
+
+    default TNode findNodeById(String id) {
+        if (getNodes().containsKey(id)){
+            return getNodes().get(id);
+        } else {
+            // check in the child
+            for (TNode childNode : getNodes().values()) {
+                TNode foundNode = (TNode) childNode.findNodeById(id);
+                if (foundNode != null){
+                    return foundNode;
+                }
+            }
+        }
+        return null;
+    }
 }

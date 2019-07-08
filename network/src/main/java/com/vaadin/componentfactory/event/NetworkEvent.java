@@ -30,7 +30,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class NetworkEvent {
 
@@ -48,15 +47,15 @@ public class NetworkEvent {
             List<String> nodeIds = NetworkConverter.convertJsonToIdList(nodes);
             networkNodes = new ArrayList<>();
             for (String nodeId : nodeIds) {
-                if (source.getRootData().getNodes().containsKey(nodeId)) {
-                    networkNodes.add(source.getRootData().getNodes().get(nodeId));
+                if (source.getCurrentData().getNodes().containsKey(nodeId)) {
+                    networkNodes.add(source.getCurrentData().getNodes().get(nodeId));
                 }
             }
             List<String> edgeIds = NetworkConverter.convertJsonToIdList(edges);
             networkEdges = new ArrayList<>();
             for (String edgeId : edgeIds) {
-                if (source.getRootData().getEdges().containsKey(edgeId)) {
-                    networkEdges.add(source.getRootData().getEdges().get(edgeId));
+                if (source.getCurrentData().getEdges().containsKey(edgeId)) {
+                    networkEdges.add(source.getCurrentData().getEdges().get(edgeId));
                 }
             }
         }
@@ -263,11 +262,28 @@ public class NetworkEvent {
     }
 
     @DomEvent("vcf-network-create-component")
-    public static class NetworkNewComponentEvent extends ComponentEvent<Network> {
+    public static class NetworkNewComponentEvent<TNode extends NetworkNode<TNode, TEdge>, TEdge extends NetworkEdge> extends ComponentEvent<Network> {
+        private List<TNode> networkNodes;
 
-        public NetworkNewComponentEvent(Network source, boolean fromClient,
+        public NetworkNewComponentEvent(Network<TNode,TEdge> source, boolean fromClient,
+                                        @EventData("event.detail.nodes") JsonValue nodes,
                                         @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
             super(source, fromClient);
+            List<String> nodeIds = NetworkConverter.convertJsonToIdList(nodes);
+            networkNodes = new ArrayList<>();
+            for (String nodeId : nodeIds) {
+                if (source.getCurrentData().getNodes().containsKey(nodeId)) {
+                    networkNodes.add(source.getCurrentData().getNodes().get(nodeId));
+                }
+            }
+        }
+
+        public List<TNode> getNetworkNodes() {
+            return networkNodes;
+        }
+
+        public void setNetworkNodes(List<TNode> networkNodes) {
+            this.networkNodes = networkNodes;
         }
     }
 
@@ -365,10 +381,9 @@ public class NetworkEvent {
         public NetworkHoverNodeEvent(Network<TNode, ?> source, boolean fromClient,
                                              @EventData("event.detail.id") String nodeId) {
             super(source, fromClient);
-            source.getNodes().stream().filter(node -> nodeId.equals(node.getId())).findFirst().ifPresent(foundedNode -> node = foundedNode);
 
-            if (source.getRootData().getNodes().containsKey(nodeId)){
-                node = source.getRootData().getNodes().get(nodeId);
+            if (source.getCurrentData().getNodes().containsKey(nodeId)){
+                node = source.getCurrentData().getNodes().get(nodeId);
             }
         }
 
@@ -390,8 +405,8 @@ public class NetworkEvent {
         public NetworkHoverEdgeEvent(Network<?, TEdge> source, boolean fromClient,
                                      @EventData("event.detail.id") String edgeId) {
             super(source, fromClient);
-            if (source.getRootData().getEdges().containsKey(edgeId)){
-                edge = source.getRootData().getEdges().get(edgeId);
+            if (source.getCurrentData().getEdges().containsKey(edgeId)){
+                edge = source.getCurrentData().getEdges().get(edgeId);
             }
         }
 
@@ -406,24 +421,25 @@ public class NetworkEvent {
 
 
     @DomEvent("vcf-network-open-node-editor")
-    public static class NetworkOpenNodeEditorEvent extends ComponentEvent<Network> {
-        private String nodeId;
+    public static class NetworkOpenNodeEditorEvent<TNode extends NetworkNode<TNode, TEdge>, TEdge extends NetworkEdge> extends ComponentEvent<Network> {
+        private TNode node;
 
-        public NetworkOpenNodeEditorEvent(Network source, boolean fromClient,
+        public NetworkOpenNodeEditorEvent(Network<TNode,?> source, boolean fromClient,
                                              @EventData("event.detail.id") String nodeId,
                                              @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
             super(source, fromClient);
-            this.nodeId = nodeId;
+            if (source.getCurrentData().getNodes().containsKey(nodeId)){
+                node = source.getCurrentData().getNodes().get(nodeId);
+            }
         }
 
-        public String getNodeId() {
-            return nodeId;
+        public TNode getNode() {
+            return node;
         }
 
-        public void setNodeId(String nodeId) {
-            this.nodeId = nodeId;
+        public void setNode(TNode node) {
+            this.node = node;
         }
-
     }
 
 
@@ -437,6 +453,30 @@ public class NetworkEvent {
 
     }
 
+    @DomEvent("vcf-network-navigate-to")
+    public static class NetworkNavigateToEvent extends ComponentEvent<Network> {
+        private String nodeId;
+
+        public NetworkNavigateToEvent(Network source, boolean fromClient,
+                                          @EventData("event.detail.id") String nodeId,
+                                          @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
+            super(source, fromClient);
+            // Root is selected
+            if (nodeId == null || nodeId.isEmpty()){
+                this.nodeId = null;
+            } else {
+                this.nodeId = nodeId;
+            }
+        }
+
+        public String getNodeId() {
+            return nodeId;
+        }
+
+        public void setNodeId(String nodeId) {
+            this.nodeId = nodeId;
+        }
+    }
 
     @FunctionalInterface
     public interface ConfirmEventListener<T extends ComponentEvent<?>>
