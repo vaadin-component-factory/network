@@ -23,7 +23,9 @@ public class NetworkNodeEditorImpl extends FormLayout implements NetworkNodeEdit
 
     public NetworkNodeEditorImpl() {
         add(id,label,x,y);
+        binderNode.forField(label).withValidator(l -> l.length()> 3, "Label should have more then 3 chars ").bind("label");
         binderNode.bindInstanceFields(this);
+
     }
 
     @Override
@@ -39,6 +41,7 @@ public class NetworkNodeEditorImpl extends FormLayout implements NetworkNodeEdit
 
     @Override
     public void readBean(NetworkNodeImpl node){
+        this.node = node;
         binderNode.readBean(node);
     }
 

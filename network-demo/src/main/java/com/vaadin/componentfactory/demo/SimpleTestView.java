@@ -24,6 +24,7 @@ public class SimpleTestView extends VerticalLayout {
             Notification.show("edges "+ network.getEdges());
         });
         add(network, checkNodesListButton, checkEdgesListButton);
+        network.addNodeEditor(new NetworkNodeEditorImpl());
     }
 
 }

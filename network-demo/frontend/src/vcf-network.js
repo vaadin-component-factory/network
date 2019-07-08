@@ -52,12 +52,6 @@ class VcfNetwork extends ElementMixin(ThemableMixin(PolymerElement)) {
       <vcf-network-info-panel id="infopanel">
         <div slot="node-form">
           <slot name="node-form">
-            <vaadin-text-field id="node-name" label="Name" theme="small"></vaadin-text-field>
-            <vaadin-text-field id="node-id" label="ID" readonly autoselect theme="small"></vaadin-text-field>
-            <div class="coords">
-              <vaadin-text-field id="node-x" label="x" readonly autoselect theme="small"></vaadin-text-field>
-              <vaadin-text-field id="node-y" label="y" readonly autoselect theme="small"></vaadin-text-field>
-            </div> 
           </slot>
         </div>
       </vcf-network-info-panel>

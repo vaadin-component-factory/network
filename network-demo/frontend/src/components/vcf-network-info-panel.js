@@ -96,7 +96,7 @@ class VcfNetworkInfoPanel extends ThemableMixin(PolymerElement) {
           <vaadin-button id="copy-button" theme="tertiary" title="Copy">
             <iron-icon icon="icons:content-copy"></iron-icon>
           </vaadin-button>
-          <vaadin-button id="save-button" theme="tertiary" title="Save">
+          <vaadin-button id="save-button" class="details hidden" theme="tertiary" title="Save">
             <iron-icon icon="icons:save"></iron-icon>
           </vaadin-button>
           <vaadin-button id="delete-button" theme="tertiary error" title="Delete">
@@ -105,14 +105,15 @@ class VcfNetworkInfoPanel extends ThemableMixin(PolymerElement) {
         </div>
         <div class="details-container">
           <div class="details hidden" id="node-details">
-            <slot name="node-form">
-                <vaadin-text-field id="node-name" label="Name" theme="small"></vaadin-text-field>
-                <vaadin-text-field id="node-id" label="ID" readonly autoselect theme="small"></vaadin-text-field>
-                <div class="coords">
-                  <vaadin-text-field id="node-x" label="x" readonly autoselect theme="small"></vaadin-text-field>
-                  <vaadin-text-field id="node-y" label="y" readonly autoselect theme="small"></vaadin-text-field>
-                </div>
-            </slot>
+              <vaadin-text-field id="node-name" label="Name" theme="small"></vaadin-text-field>
+              <vaadin-text-field id="node-id" label="ID" readonly autoselect theme="small"></vaadin-text-field>
+              <div class="coords">
+                <vaadin-text-field id="node-x" label="x" readonly autoselect theme="small"></vaadin-text-field>
+                <vaadin-text-field id="node-y" label="y" readonly autoselect theme="small"></vaadin-text-field>
+              </div>
+          </div>
+          <div class="details hidden" id="node-form">
+            <slot name="node-form"></slot>
           </div>
           <div class="details hidden" id="edge-details">
             <vaadin-text-field id="edge-id" label="Id" readonly autoselect theme="small"></vaadin-text-field>
@@ -196,8 +197,10 @@ class VcfNetworkInfoPanel extends ThemableMixin(PolymerElement) {
   _selectionChanged(selection) {
     this._setSelectionText();
     this.$['node-details'].classList.add('hidden');
+    this.$['node-form'].classList.add('hidden');
     this.$['edge-details'].classList.add('hidden');
     this.$['component-details'].classList.add('hidden');
+    this.$['save-button'].classList.add('hidden');
     /* Set selection text class */
     if (this.selectionText === 'No selection') {
       this.$['selection'].classList.remove('active');
@@ -237,13 +240,16 @@ class VcfNetworkInfoPanel extends ThemableMixin(PolymerElement) {
   _showNodeDetails() {
     const evt = new CustomEvent('vcf-network-open-node-editor', { detail: { id: this._selectedNode.id }, cancelable: true });
     const cancelled = !this.main.dispatchEvent(evt);
-    this.$['node-details'].classList.remove('hidden');
     if (!cancelled) {
+      this.$['node-details'].classList.remove('hidden');
       this.$['node-name'].value = this._selectedNode.label;
       this.$['node-id'].value = this._selectedNode.id;
       this.$['node-id'].title = this._selectedNode.id;
       this.$['node-x'].value = this._selectedNode.x;
-      this.$['node-y'].value = this._selectedNode.y;;
+      this.$['node-y'].value = this._selectedNode.y;
+    } else {;
+      this.$['node-form'].classList.remove('hidden');
+      this.$['save-button'].classList.remove('hidden');
     }
   }
 

@@ -59,14 +59,17 @@ public class ListenerTestView extends VerticalLayout {
         node4.setY(0);
         ncomponent.getNodes().put(node4.getId(),node4);
         network.addNode(ncomponent);
-/*
-        System.out.println("adding Edge");
-        for (int i = 1; i < network.getNodes().size(); i++) {
-            CustomNetworkEdge networkEdge = new CustomNetworkEdge();
-            networkEdge.setFrom(network.getNodes().get(i-1).getId());
-            networkEdge.setTo(network.getNodes().get(i).getId());
-            network.addEdge(networkEdge);
-        }*/
+
+        CustomNetworkNode previousNode = null;
+        for (CustomNetworkNode networkNode : network.getNodes()) {
+            if (previousNode != null){
+                CustomNetworkEdge networkEdge = new CustomNetworkEdge();
+                networkEdge.setFrom(previousNode.getId());
+                networkEdge.setTo(networkNode.getId());
+                network.addEdge(networkEdge);
+            }
+            previousNode = networkNode;
+        }
         network.addNetworkAfterDeleteNodesListener(event -> {
             Notification.show("Nodes deleted =" + event.getNetworkNodesId());
 
@@ -79,17 +82,7 @@ public class ListenerTestView extends VerticalLayout {
 
         });
         network.addNodeEditor(new CustomNetworkNodeEditorImpl());
-/*
-        network.retrieveNodes(networkNodes -> {
-            System.out.println("adding Edge");
-            for (int i = 1; i < networkNodes.size(); i++) {
-                NetworkEdgeImpl networkEdge = new NetworkEdgeImpl();
-                networkEdge.setFrom(networkNodes.get(i-1).getId());
-                networkEdge.setTo(networkNodes.get(i).getId());
-                network.addEdge(networkEdge);
-            }
-        });
-*/
+
     /*    network.addNetworkNewNodeListener(event -> Notification.show("New node =" + event.getNetworkNode()));
         network.addNetworkDeleteNodesListener(event -> Notification.show("Nodes deleted =" + event.getNetworkNodesId()));
 */
@@ -200,17 +193,21 @@ public class ListenerTestView extends VerticalLayout {
            Notification.show("Nodes selected "+ event.getNetworkNodes());
            Notification.show("Edges selected "+ event.getNetworkEdges());
         });
-/*
+
         Button addEdgesButton = new Button("add edges", e ->{
                 System.out.println("adding Edge");
 
-        for (int i = 1; i < network.getNodes().size(); i++) {
-            CustomNetworkEdge networkEdge = new CustomNetworkEdge();
-            networkEdge.setFrom(network.getNodes().get(i-1).getId());
-            networkEdge.setTo(network.getNodes().get(i).getId());
-            network.addEdge(networkEdge);
-        }});*/
-        /*add(addEdgesButton);*/
+            CustomNetworkNode previousNode1 = null;
+            for (CustomNetworkNode networkNode : network.getNodes()) {
+                if (previousNode1 != null){
+                    CustomNetworkEdge networkEdge = new CustomNetworkEdge();
+                    networkEdge.setFrom(previousNode1.getId());
+                    networkEdge.setTo(networkNode.getId());
+                    network.addEdge(networkEdge);
+                }
+                previousNode1 = networkNode;
+            }});
+        add(addEdgesButton);
 
         Button checkAllButton = new Button("check all", e -> {
             System.out.println(network.getRootData().toJson().toString());
