@@ -53,7 +53,7 @@ public class ListenerTestView extends VerticalLayout {
         ncomponent.setLabel("Component");
         ncomponent.setX(0);
         ncomponent.setY(0);
-        ncomponent.setType("component");
+        ncomponent.setType(NetworkNode.COMPONENT_TYPE);
 
 
         CustomNetworkNode node4 = new CustomNetworkNode();
@@ -271,7 +271,7 @@ public class ListenerTestView extends VerticalLayout {
                 // remove edges and put it into the new component
                 CustomNetworkNode component = new CustomNetworkNode();
                 component.setLabel("New component");
-                component.setType("component");
+                component.setType(NetworkNode.COMPONENT_TYPE);
                 // create a component as the same position of the 1st node
                 component.setX(networkNodes.get(0).getX());
                 component.setY(networkNodes.get(0).getY());
