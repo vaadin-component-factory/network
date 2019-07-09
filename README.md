@@ -61,7 +61,7 @@ addAndExpand(network);
 network.addNodeEditor(new CustomNetworkNodeEditorImpl());
 ```
 
-[<img src="https://raw.githubusercontent.com/vaadin-component-factory/network/master/custom-editor-screenshot" alt="Screenshot of network with a custom editor">](https://vaadin.com/directory/components/network)
+[<img src="https://raw.githubusercontent.com/vaadin-component-factory/network/master/custom-editor-screenshot.png" alt="Screenshot of network with a custom editor">](https://vaadin.com/directory/components/network)
 
 
 ## Setting up for development:
