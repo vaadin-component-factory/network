@@ -198,7 +198,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
                                 confirmed &= listener.onConfirmEvent(e);
                             }
                             if (confirmed) {
-                                // Remove all the nodes with the same id and replace it with the updated nodes
+                                // replace the updated nodes
                                 for (TNode networkNode : e.getNetworkNodes()) {
                                     currentData.getNodes().put(networkNode.getId(), networkNode);
                                 }
@@ -248,15 +248,13 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         ComponentUtil.addListener(this, NetworkEvent.NetworkUpdateCoordinatesEvent.class,
                 ((ComponentEventListener<NetworkEvent.NetworkUpdateCoordinatesEvent>) e -> {
                     // update the node coordinates in the model
-                    getNodes().stream().filter(node -> node.getId().equals(e.getNodeId())).findFirst().ifPresent(
-                            nodeToMove -> {
-                                // model updated
-                                nodeToMove.setX(e.getX());
-                                nodeToMove.setY(e.getY());
-                                // send the updated node to the client
-                                updateNode(nodeToMove);
-                            }
-                    );
+                    if (getCurrentData().getNodes().containsKey(e.getNodeId())){
+                        TNode nodeToMove = getCurrentData().getNodes().get(e.getNodeId());
+                        nodeToMove.setX(e.getX());
+                        nodeToMove.setY(e.getY());
+                        // send the updated node to the client
+                        updateNode(nodeToMove);
+                    }
                 })
         );
 

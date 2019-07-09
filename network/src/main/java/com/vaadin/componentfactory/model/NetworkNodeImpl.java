@@ -149,14 +149,24 @@ public class NetworkNodeImpl implements NetworkNode<NetworkNodeImpl,NetworkEdgeI
         if (value.hasKey("id")) {
             setId(value.getString("id"));
         }
-        setLabel(value.getString("label"));
-        setX(value.getNumber("x"));
-        setY(value.getNumber("y"));
+        if (value.hasKey("label")) {
+            setLabel(value.getString("label"));
+        }
+        if (value.hasKey("x")) {
+            setX(value.getNumber("x"));
+        }
+        if (value.hasKey("y")) {
+            setY(value.getNumber("y"));
+        }
         if (value.hasKey("type")) {
             setType(value.getString("type"));
         }
-        setNodes(NetworkConverter.convertJsonToNodeMap(value.getArray("nodes"), NetworkNodeImpl.class));
-        setEdges(NetworkConverter.convertJsonToEdgeMap(value.getArray("edges"), NetworkEdgeImpl.class));
+        if (value.hasKey("nodes")) {
+            setNodes(NetworkConverter.convertJsonToNodeMap(value.getArray("nodes"), NetworkNodeImpl.class));
+        }
+        if (value.hasKey("edges")) {
+            setEdges(NetworkConverter.convertJsonToEdgeMap(value.getArray("edges"), NetworkEdgeImpl.class));
+        }
         return this;
     }
 }

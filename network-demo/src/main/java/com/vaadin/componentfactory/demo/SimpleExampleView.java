@@ -9,11 +9,11 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
 @Route("simple")
-public class SimpleTestView extends VerticalLayout {
+public class SimpleExampleView extends VerticalLayout {
 
     private Network<NetworkNodeImpl, NetworkEdgeImpl> network = new Network<>(NetworkNodeImpl.class,NetworkEdgeImpl.class);
 
-    public SimpleTestView() {
+    public SimpleExampleView() {
         Button checkNodesListButton = new Button("check nodes list", e -> {
             System.out.println("node list "+ network.getNodes());
             Notification.show("nodes "+ network.getNodes());

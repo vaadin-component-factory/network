@@ -18,7 +18,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
 
 @Route("")
-public class DemoTestView extends VerticalLayout {
+public class DemoExampleView extends VerticalLayout {
 
     private Network<NetworkNodeImpl, NetworkEdgeImpl> network = new Network<>(NetworkNodeImpl.class, NetworkEdgeImpl.class);
 
@@ -62,7 +62,7 @@ public class DemoTestView extends VerticalLayout {
     }
 
 
-    public DemoTestView() {
+    public DemoExampleView() {
         network.setWidthFull();
         addAndExpand(network);
         setSizeFull();

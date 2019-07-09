@@ -1,6 +1,6 @@
 # Component Factory Network for Vaadin 14+
 Network is Java API for [<vcf-network>](https://github.com/vaadin-component-factory/vcf-network) web component for Vaadin 14+ in NPM Mode. 
-It provides an easy way to display breadcrumb on web pages.
+It provides an easy way to display network on web pages.
 
 [Live Demo ↗](https://incubator.app.fi/network-demo/network)
 
@@ -9,14 +9,59 @@ It provides an easy way to display breadcrumb on web pages.
 
 ## Usage
 Create instance of `Network`. You can set scale, add/edit/delete nodes/edges.
-You can also create component (group of nodes)
+You can also create component (group of nodes and edges).
+You can navigate to a component when double-click. 
 
 ```
 Network network = new Network();
 network.setScale(2);
 network.addNode(new NetworkNode("My Node"))
 ```
-Breadcrumbs "Home" and "Components" will be hidden when viewport is less then 420px  
+
+### Listeners
+
+You can call Java function on events:
+* on-select (nodes,edges)
+* on-new-node (nodes to add)
+* after-new-node (added nodes)
+* on-update-node (nodes to update)
+* on-delete-node (id of nodes to delete)
+* after-delete-node (id of deleted nodes)
+* on-hover-node (node hovered)
+* on-new-edge (edges to add)
+* after-new-edge (added edges)
+* on-update-edge (edges to update)
+* on-delete-edge (id of edges to delete)
+* after-delete-edge (id of deleted edges)
+* on-hover-edge (edge hovered)
+* on-create-component (id of selected nodes)
+
+Example:
+```
+Network network = new Network();
+network.setWidthFull();
+addAndExpand(network);
+
+network.addNetworkSelectionListener(event -> {
+    Notification.show("Nodes selected "+ event.getNetworkNodes());
+    Notification.show("Edges selected "+ event.getNetworkEdges());
+});
+```
+
+[<img src="https://raw.githubusercontent.com/vaadin-component-factory/network/master/selection-listener-screenshot.png" alt="Screenshot of network with a listener">](https://vaadin.com/directory/components/network)
+
+## Custom editor for Node
+
+You can customize node properties and create your own editor in Java (See CustomEditorView):
+
+```
+Network network = new Network();
+network.setWidthFull();
+addAndExpand(network);
+network.addNodeEditor(new CustomNetworkNodeEditorImpl());
+```
+
+[<img src="https://raw.githubusercontent.com/vaadin-component-factory/network/master/custom-editor-screenshot" alt="Screenshot of network with a custom editor">](https://vaadin.com/directory/components/network)
 
 
 ## Setting up for development:

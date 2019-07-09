@@ -112,7 +112,7 @@ public class NetworkConverter<TNode extends NetworkNode<TNode,TEdge>,TEdge exten
             }
         } else if (value instanceof JsonObject){
             JsonObject jsonObject = (JsonObject)  value;
-            if (jsonObject.hasKey("x")|| jsonObject.hasKey("from")){
+            if (jsonObject.hasKey("id")|| jsonObject.hasKey("x") || jsonObject.hasKey("from")){
                 // its an item
                 try {
                     T node = tClass.getDeclaredConstructor().newInstance();
@@ -182,8 +182,6 @@ public class NetworkConverter<TNode extends NetworkNode<TNode,TEdge>,TEdge exten
         }
         return map;
     }
-
-
 
     public static <T extends NetworkEdge> Map<String,T> convertJsonToEdgeMap(JsonValue value, Class<T> tClass) {
         HashMap<String, T> map = new HashMap<>();

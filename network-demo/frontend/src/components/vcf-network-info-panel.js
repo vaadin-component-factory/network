@@ -46,15 +46,12 @@ class VcfNetworkInfoPanel extends ThemableMixin(PolymerElement) {
         }
 
         .button-container {
+          justify-content: space-around; 
           align-items: center;
           box-shadow: inset 0 -1px 0 0 var(--lumo-shade-10pct);
           display: flex;
           flex-shrink: 0;
           height: var(--lumo-size-xl);
-        }
-
-        .button-container vaadin-button {
-          width: calc(100% / 4);
         }
 
         .details-container {

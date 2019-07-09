@@ -20,13 +20,18 @@ public class NetworkView extends DemoView {
 
         Div descriptionJava = new Div();
         descriptionJava.setText("You can create/edit/delete nodes and edges.");
-        addCard("Network usage from JAVA", new DemoTestView(), descriptionJava);
+        addCard("Network usage from JAVA", new DemoExampleView(), descriptionJava);
 
 
         Div descriptionEvent = new Div();
         descriptionEvent.setText("You can listen events (new/delete) for nodes and edges.");
-        addCard("Events received from JAVA", new ListenerTestView(), descriptionEvent);
+        addCard("Events received from JAVA", new ListenerExampleView(), descriptionEvent);
 
+
+
+        Div descriptionCustomEditor = new Div();
+        descriptionEvent.setText("The node editor has been customised");
+        addCard("Custom node editor", new CustomEditorExampleView(), descriptionCustomEditor);
 
     }
 }
