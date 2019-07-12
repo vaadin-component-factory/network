@@ -24,6 +24,7 @@ import com.vaadin.componentfactory.model.NetworkEdge;
 import com.vaadin.componentfactory.model.NetworkNode;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.shared.Registration;
 
 import java.lang.reflect.InvocationTargetException;
@@ -38,7 +39,8 @@ import java.util.stream.Collectors;
  * @param <TEdge> Edge type
  */
 @Tag("vcf-network")
-@JsModule("./src/vcf-network.js")
+@NpmPackage(value="@vaadin-component-factory/vcf-network", version="1.0.0-alpha.4")
+@JsModule("@vaadin-component-factory/vcf-network/src/vcf-network.js")
 public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends NetworkEdge> extends Component implements HasSize, HasTheme {
 
     private TNode rootData;
