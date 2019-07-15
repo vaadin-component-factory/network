@@ -24,6 +24,7 @@ public class CustomNetworkNodeEditorImpl extends FormLayout implements NetworkNo
 
     public CustomNetworkNodeEditorImpl() {
         add(id,label,x,y, customField);
+        id.setReadOnly(true);
         binderNode.bindInstanceFields(this);
     }
 

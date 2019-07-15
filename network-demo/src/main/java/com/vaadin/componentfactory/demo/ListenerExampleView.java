@@ -61,10 +61,25 @@ public class ListenerExampleView extends VerticalLayout {
         node4.setX(-50);
         node4.setY(0);
         ncomponent.getNodes().put(node4.getId(),node4);
+
+        CustomNetworkNode nodeInput = new CustomNetworkNode();
+        nodeInput.setLabel("My input node");
+        nodeInput.setX(0);
+        nodeInput.setY(0);
+        nodeInput.setType(NetworkNode.INPUT_TYPE);
+        ncomponent.getNodes().put(nodeInput.getId(),nodeInput);
+
+        CustomNetworkNode nodeOutput = new CustomNetworkNode();
+        nodeOutput.setLabel("My output node");
+        nodeOutput.setX(50);
+        nodeOutput.setY(0);
+        nodeOutput.setType(NetworkNode.OUTPUT_TYPE);
+        ncomponent.getNodes().put(nodeOutput.getId(),nodeOutput);
+
         network.addNode(ncomponent);
 
         CustomNetworkNode previousNode = null;
-        for (CustomNetworkNode networkNode : network.getNodes()) {
+     /*   for (CustomNetworkNode networkNode : network.getNodes()) {
             if (previousNode != null){
                 CustomNetworkEdge networkEdge = new CustomNetworkEdge();
                 networkEdge.setFrom(previousNode.getId());
@@ -72,7 +87,7 @@ public class ListenerExampleView extends VerticalLayout {
                 network.addEdge(networkEdge);
             }
             previousNode = networkNode;
-        }
+        }*/
         network.addNetworkAfterDeleteNodesListener(event -> {
             Notification.show("Nodes deleted =" + event.getNetworkNodesId());
 

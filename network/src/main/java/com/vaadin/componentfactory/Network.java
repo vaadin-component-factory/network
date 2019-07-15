@@ -31,6 +31,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+
 /**
  * Network main class.
  * Java Wrapper for the vcf-network component
@@ -419,7 +423,10 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
      * @param networkEdges list of network edges
      */
     public void select(Collection<TNode> networkNodes, Collection<TEdge> networkEdges) {
-        getElement().callJsFunction("select", networkConverter.convertNetworkNodeListToJsonArrayOfIds(networkNodes), networkConverter.convertNetworkEdgeListToJsonArrayOfIds(networkEdges));
+        JsonObject jsonObject = Json.createObject();
+        jsonObject.put("nodeIds", networkConverter.convertNetworkNodeListToJsonArrayOfIds(networkNodes));
+        jsonObject.put("edgeIds", networkConverter.convertNetworkEdgeListToJsonArrayOfIds(networkEdges));
+        getElement().callJsFunction("select", jsonObject);
     }
 
     public TNode getRootData() {
