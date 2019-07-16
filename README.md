@@ -38,7 +38,7 @@ You can call Java function on events:
 
 Example:
 ```
-Network network = new Network();
+Network<NetworkNodeImpl, NetworkEdgeImpl> network = new Network<>(NetworkNodeImpl.class,NetworkEdgeImpl.class);
 network.setWidthFull();
 addAndExpand(network);
 
@@ -55,7 +55,7 @@ network.addNetworkSelectionListener(event -> {
 You can customize node properties and create your own editor in Java (See CustomEditorView):
 
 ```
-Network network = new Network();
+private Network<CustomNetworkNode, CustomNetworkEdge> network = new Network<>(CustomNetworkNode.class,CustomNetworkEdge.class);
 network.setWidthFull();
 addAndExpand(network);
 network.addNodeEditor(new CustomNetworkNodeEditorImpl());
