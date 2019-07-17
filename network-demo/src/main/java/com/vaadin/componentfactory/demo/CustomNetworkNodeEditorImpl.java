@@ -7,6 +7,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 
@@ -17,7 +18,7 @@ public class CustomNetworkNodeEditorImpl extends FormLayout implements NetworkNo
     private Binder<CustomNetworkNode> binderNode = new Binder<>(CustomNetworkNode.class);
 
     private TextField id = new TextField("id");
-    private TextField label = new TextField("Name");
+    private TextArea label = new TextArea("Name");
     private NumberField x = new NumberField("x");
     private NumberField y = new NumberField("y");
     private TextField customField = new TextField("custom field");

@@ -180,8 +180,6 @@ public class ListenerExampleView extends VerticalLayout {
             Notification.show("edges "+ network.getEdges());
         });
         add(new HorizontalLayout(addEdgesButton, checkAllButton,checkNodesListButton, checkEdgesListButton));
-
-        network.addNewComponentListener(e -> createComponent(e.getNetworkNodes()));
     }
 
     /**
@@ -197,97 +195,6 @@ public class ListenerExampleView extends VerticalLayout {
                 ).anyMatch(networkEdge ->
                         edge.getTo().equals(networkEdge.getFrom())
                 );
-    }
-
-    /**
-     * Check if nodes are linked to an external node then block the process if
-     *
-     * - remove all the selected nodes from the current Data
-     * - remove all the edges linked to this nodes from the current Data
-     * - create a new component node
-     *   - add all the selected nodes into the component
-     *   - add all the inner edges
-     *   - add a input/output node if there is no input/output node
-     *
-     * @param networkNodes selected nodes
-     */
-    private void createComponent(List<CustomNetworkNode> networkNodes) {
-        if (networkNodes.isEmpty()) {
-            Notification.show("No node selected");
-        } else {
-            List<String> ids = networkNodes.stream().map(CustomNetworkNode::getId).collect(Collectors.toList());
-
-            List<CustomNetworkEdge> edges = new ArrayList<>();
-
-            boolean innerLinkedToOuter = false;
-            for (CustomNetworkEdge edge : network.getCurrentData().getEdges().values()) {
-                boolean nodeFromInner = ids.contains(edge.getFrom());
-                boolean nodeToInner = ids.contains(edge.getTo());
-                // edge is inner --> OK OR edge is outer
-                if ((nodeFromInner && nodeToInner) || (!nodeFromInner && !nodeToInner)) {
-                    innerLinkedToOuter = false;
-                    // the edge is an inner edge
-                    if (nodeFromInner)
-                        edges.add(edge);
-                } else {
-                    innerLinkedToOuter = true;
-                }
-                if (innerLinkedToOuter) {
-                    break;
-                }
-            }
-            if (innerLinkedToOuter) {
-                // error
-                Notification.show("Some nodes are linked to outer nodes, please select not connected nodes");
-            } else {
-                // ok
-                // remove edges and put it into the new component
-                CustomNetworkNode component = new CustomNetworkNode();
-                component.setLabel("New component");
-                component.setType(NetworkNode.COMPONENT_TYPE);
-                // create a component as the same position of the 1st node
-                component.setX(networkNodes.get(0).getX());
-                component.setY(networkNodes.get(0).getY());
-                network.deleteNodes(networkNodes);
-                boolean hasInput = false;
-                boolean hasOutput = false;
-                for (CustomNetworkNode networkNode : networkNodes) {
-                    component.getNodes().put(networkNode.getId(),networkNode);
-                    if (CustomNetworkNode.INPUT_TYPE.equals(networkNode.getType())){
-                        hasInput = true;
-                    }
-                    if (CustomNetworkNode.OUTPUT_TYPE.equals(networkNode.getType())){
-                        hasOutput = true;
-                    }
-                }
-                network.deleteEdges(edges);
-                for (CustomNetworkEdge edge : edges) {
-                    component.getEdges().put(edge.getId(),edge);
-                }
-
-                // add input node if needed
-
-                if (!hasInput) {
-                    CustomNetworkNode inputNode = new CustomNetworkNode();
-                    inputNode.setLabel("input");
-                    inputNode.setType(NetworkNode.INPUT_TYPE);
-                    inputNode.setX(-250);
-                    component.getNodes().put(inputNode.getId(),inputNode);
-                }
-                // add output node if needed
-                if (!hasOutput) {
-                    CustomNetworkNode outputNode = new CustomNetworkNode();
-                    outputNode.setLabel("output");
-                    outputNode.setType(NetworkNode.OUTPUT_TYPE);
-                    component.getNodes().put(outputNode.getId(),outputNode);
-                }
-
-                network.addNode(component);
-            }
-
-        }
-
-
     }
 
 }

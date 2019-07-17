@@ -17,22 +17,32 @@ package com.vaadin.componentfactory;
  * #L%
  */
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.vaadin.componentfactory.converter.NetworkConverter;
 import com.vaadin.componentfactory.editor.NetworkNodeEditor;
 import com.vaadin.componentfactory.event.NetworkEvent;
 import com.vaadin.componentfactory.model.NetworkEdge;
 import com.vaadin.componentfactory.model.NetworkNode;
-import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.HasSize;
+import com.vaadin.flow.component.HasTheme;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.shared.Registration;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import elemental.json.Json;
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
@@ -66,7 +76,6 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewEdgesEvent<TEdge>>> newEdgesListeners = new LinkedHashSet<>();
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode, TEdge>>> updateNodesListeners = new LinkedHashSet<>();
     private final Set<NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateEdgesEvent<TEdge>>> updateEdgesListeners = new LinkedHashSet<>();
-    private final Set<ComponentEventListener<NetworkEvent.NetworkNewComponentEvent<TNode,TEdge>>> newComponentListeners = new LinkedHashSet<>();
     private ComponentEventListener<NetworkEvent.NetworkAfterDeleteNodesEvent> afterDeleteNodesListener;
     private ComponentEventListener<NetworkEvent.NetworkAfterNewNodesEvent<TNode, TEdge>> afterNewNodesListener;
     private ComponentEventListener<NetworkEvent.NetworkAfterDeleteEdgesEvent> afterDeleteEdgesListener;
@@ -241,7 +250,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         );
         ComponentUtil.addListener(this, NetworkEvent.NetworkNewComponentEvent.class, (ComponentEventListener)
                 ((ComponentEventListener<NetworkEvent.NetworkNewComponentEvent<TNode,TEdge>>) e -> {
-                    newComponentListeners.forEach(listener -> listener.onComponentEvent(e));
+                    createComponent(e.getNetworkNodes());
                 })
         );
 
@@ -500,6 +509,103 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         );
     }
 
+
+    /**
+     * Check if nodes are linked to an external node then block the process if
+     *
+     * - remove all the selected nodes from the current Data
+     * - remove all the edges linked to this nodes from the current Data
+     * - create a new component node
+     *   - add all the selected nodes into the component
+     *   - add all the inner edges
+     *   - add a input/output node if there is no input/output node
+     *
+     *   You can overrides the default behaviour if it does not fit your need
+     *
+     * @param networkNodes selected nodes
+     */
+    public void createComponent(List<TNode> networkNodes) {
+        if (networkNodes.isEmpty()) {
+            Notification.show("No node selected");
+        } else {
+            List<String> ids = networkNodes.stream().map(TNode::getId).collect(Collectors.toList());
+
+            List<TEdge> edges = new ArrayList<>();
+
+            boolean innerLinkedToOuter = false;
+            for (TEdge edge : getCurrentData().getEdges().values()) {
+                boolean nodeFromInner = ids.contains(edge.getFrom());
+                boolean nodeToInner = ids.contains(edge.getTo());
+                // edge is inner --> OK OR edge is outer
+                if ((nodeFromInner && nodeToInner) || (!nodeFromInner && !nodeToInner)) {
+                    innerLinkedToOuter = false;
+                    // the edge is an inner edge
+                    if (nodeFromInner)
+                        edges.add(edge);
+                } else {
+                    innerLinkedToOuter = true;
+                }
+                if (innerLinkedToOuter) {
+                    break;
+                }
+            }
+            if (innerLinkedToOuter) {
+                // error
+                Notification.show("Some nodes are linked to outer nodes, please select not connected nodes");
+            } else {
+                // ok
+                // remove edges and put it into the new component
+                try {
+                    TNode component = nodeClass.getDeclaredConstructor().newInstance();
+                    component.setLabel("New component");
+                    component.setType(NetworkNode.COMPONENT_TYPE);
+                    // create a component as the same position of the 1st node
+                    component.setX(networkNodes.get(0).getX());
+                    component.setY(networkNodes.get(0).getY());
+                    deleteNodes(networkNodes);
+                    boolean hasInput = false;
+                    boolean hasOutput = false;
+                    for (TNode networkNode : networkNodes) {
+                        component.getNodes().put(networkNode.getId(),networkNode);
+                        if (TNode.INPUT_TYPE.equals(networkNode.getType())){
+                            hasInput = true;
+                        }
+                        if (TNode.OUTPUT_TYPE.equals(networkNode.getType())){
+                            hasOutput = true;
+                        }
+                    }
+                    deleteEdges(edges);
+                    for (TEdge edge : edges) {
+                        component.getEdges().put(edge.getId(),edge);
+                    }
+
+                    // add input node if needed
+
+                    if (!hasInput) {
+                        TNode inputNode = nodeClass.getDeclaredConstructor().newInstance();
+                        inputNode.setLabel("input");
+                        inputNode.setType(NetworkNode.INPUT_TYPE);
+                        inputNode.setX(-250);
+                        component.getNodes().put(inputNode.getId(),inputNode);
+                    }
+                    // add output node if needed
+                    if (!hasOutput) {
+                        TNode outputNode = nodeClass.getDeclaredConstructor().newInstance();
+                        outputNode.setLabel("output");
+                        outputNode.setType(NetworkNode.OUTPUT_TYPE);
+                        component.getNodes().put(outputNode.getId(),outputNode);
+                    }
+
+                    addNode(component);
+
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+    }
+
     // ALL THE LISTENERS
 
     public Registration addDeleteNodesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkDeleteNodesEvent> listener) {
@@ -520,11 +626,6 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
     public Registration addNewEdgesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewEdgesEvent<TEdge>> listener) {
         newEdgesListeners.add(listener);
         return () -> newEdgesListeners.remove(listener);
-    }
-
-    public Registration addNewComponentListener(ComponentEventListener<NetworkEvent.NetworkNewComponentEvent<TNode,TEdge>> listener) {
-        newComponentListeners.add(listener);
-        return () -> newComponentListeners.remove(listener);
     }
 
     public Registration addUpdateNodesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode, TEdge>> listener) {
