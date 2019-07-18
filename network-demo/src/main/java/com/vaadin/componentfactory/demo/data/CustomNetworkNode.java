@@ -14,54 +14,77 @@ public class CustomNetworkNode implements NetworkNode<CustomNetworkNode,CustomNe
     private String label;
     private double x;
     private double y;
-    private String type;
+    private NodeType type;
+    private ComponentColor componentColor;
     private String customField;
+
+    private Map<String,CustomNetworkNode> nodes = new HashMap<>();
+
+    private Map<String,CustomNetworkEdge> edges = new HashMap<>();
 
     public CustomNetworkNode() {
 
     }
-
+    @Override
     public String getId() {
         if (id == null){
             id = UUID.randomUUID();
         }
         return id.toString();
     }
-
+    @Override
     public void setId(String id) {
         this.id = UUID.fromString(id);
     }
 
+    @Override
     public String getLabel() {
         return label;
     }
 
+    @Override
     public void setLabel(String label) {
         this.label = label;
     }
 
+    @Override
     public double getX() {
         return x;
     }
 
+    @Override
     public void setX(double x) {
         this.x = x;
     }
 
+    @Override
     public double getY() {
         return y;
     }
 
+    @Override
     public void setY(double y) {
         this.y = y;
     }
 
-    public String getType() {
+    @Override
+    public NodeType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    @Override
+    public void setType(NodeType type) {
         this.type = type;
+    }
+
+    @Override
+    public ComponentColor getComponentColor() {
+        return componentColor;
+    }
+
+    @Override
+    public void setComponentColor(ComponentColor componentColor) {
+        this.componentColor = componentColor;
     }
 
     @Override
@@ -81,10 +104,6 @@ public class CustomNetworkNode implements NetworkNode<CustomNetworkNode,CustomNe
     public String toString() {
         return label;
     }
-
-    private Map<String,CustomNetworkNode> nodes = new HashMap<>();
-
-    private Map<String,CustomNetworkEdge> edges = new HashMap<>();
 
     @Override
     public Map<String, CustomNetworkNode> getNodes() {
@@ -116,16 +135,8 @@ public class CustomNetworkNode implements NetworkNode<CustomNetworkNode,CustomNe
 
     @Override
     public JsonObject toJson() {
-        JsonObject obj = Json.createObject();
-        obj.put("id", getId());
-        if (getLabel() != null) {
-            obj.put("label", getLabel());
-        }
-        obj.put("x",getX());
-        obj.put("y",getY());
-        if (getType() != null) {
-            obj.put("type", getType());
-        }
+        JsonObject obj = NetworkNode.super.toJson();
+
         if (getCustomField() != null) {
             obj.put("custom-field", getCustomField());
         }
@@ -137,15 +148,7 @@ public class CustomNetworkNode implements NetworkNode<CustomNetworkNode,CustomNe
 
     @Override
     public JsonSerializable readJson(JsonObject value) {
-        if (value.hasKey("id")) {
-            setId(value.getString("id"));
-        }
-        setLabel(value.getString("label"));
-        setX(value.getNumber("x"));
-        setY(value.getNumber("y"));
-        if (value.hasKey("type")) {
-            setType(value.getString("type"));
-        }
+        NetworkNode.super.readJson(value);
         if (value.hasKey("custom-field")) {
             setCustomField(value.getString("custom-field"));
         }

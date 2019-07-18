@@ -20,8 +20,10 @@ package com.vaadin.componentfactory;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,6 +32,7 @@ import com.vaadin.componentfactory.editor.NetworkNodeEditor;
 import com.vaadin.componentfactory.event.NetworkEvent;
 import com.vaadin.componentfactory.model.NetworkEdge;
 import com.vaadin.componentfactory.model.NetworkNode;
+import com.vaadin.componentfactory.model.NetworkNode.NodeType;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
@@ -37,6 +40,7 @@ import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.notification.Notification;
@@ -91,6 +95,16 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
         }
+        networkConverter = new NetworkConverter<>(this.nodeClass, this.edgeClass);
+        registerHandlers();
+    }
+
+
+    public Network(Class<TNode> nodeClass, Class<TEdge> edgeClass, TNode rootData) {
+        this.nodeClass = nodeClass;
+        this.edgeClass = edgeClass;
+        this.rootData = rootData;
+        this.currentData = rootData;
         networkConverter = new NetworkConverter<>(this.nodeClass, this.edgeClass);
         registerHandlers();
     }
@@ -273,6 +287,20 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
                 })
         );
 
+
+
+        ComponentUtil.addListener(this, NetworkEvent.NetworkDeleteTemplateEvent.class, (ComponentEventListener)
+                (ComponentEventListener<NetworkEvent.NetworkDeleteTemplateEvent<TNode,TEdge>>) e -> {
+                    ConfirmDialog dialog = new ConfirmDialog("Confirm delete",
+                            "Are you sure you want to delete the template?", "Yes", event -> {deleteTemplate(e.getTemplate());event.getSource().close();},
+                            "Cancel", event -> {event.getSource().close();});
+                    dialog.open();
+                }
+        );
+        ComponentUtil.addListener(this, NetworkEvent.NetworkNewTemplateEvent.class,
+                (ComponentEventListener<NetworkEvent.NetworkNewTemplateEvent>) e ->
+                    addNewTemplate()
+        );
     }
 
     /**
@@ -302,7 +330,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
 
     /**
      * Add a new Network node
-     * If you want to add multiple nodes then call {@link #addNodes(List)}
+     * If you want to add multiple nodes then call {@link #addNodes(Collection)}
      *
      * @param node the node to add
      */
@@ -317,7 +345,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
      *
      * @param networkNodes nodes to add
      */
-    public void addNodes(List<TNode> networkNodes) {
+    public void addNodes(Collection<TNode> networkNodes) {
         for (TNode networkNode : networkNodes) {
             currentData.getNodes().put(networkNode.getId(), networkNode);
         }
@@ -326,7 +354,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
 
     /**
      * remove the node from the network
-     * If you want to remove multiple nodes then call {@link #deleteNodes(List)}
+     * If you want to remove multiple nodes then call {@link #deleteNodes(Collection)}
      *
      * @param node node to delete
      */
@@ -341,7 +369,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
      *
      * @param nodes nodes to delete
      */
-    public void deleteNodes(List<TNode> nodes) {
+    public void deleteNodes(Collection<TNode> nodes) {
         for (TNode node : nodes) {
             currentData.getNodes().remove(node.getId());
         }
@@ -350,7 +378,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
 
     /**
      * Update the node attributes
-     * If you want to update multiple nodes then call {@link #updateNodes(List)}
+     * If you want to update multiple nodes then call {@link #updateNodes(Collection)}
      *
      * @param node node to be updated
      */
@@ -365,7 +393,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
      *
      * @param networkNodes nodes to update
      */
-    public void updateNodes(List<TNode> networkNodes) {
+    public void updateNodes(Collection<TNode> networkNodes) {
         getElement().callJsFunction("confirmUpdateNodes", NetworkConverter.convertNetworkNodeListToJsonArray(networkNodes));
     }
 
@@ -386,7 +414,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
      *
      * @param networkEdges edges to add
      */
-    public void addEdges(List<TEdge> networkEdges) {
+    public void addEdges(Collection<TEdge> networkEdges) {
         for (TEdge networkEdge : networkEdges) {
             currentData.getEdges().put(networkEdge.getId(), networkEdge);
         }
@@ -395,7 +423,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
 
     /**
      * Delete the edge with the same id
-     * If you want to remove multiple edges then call {@link #deleteEdges(List)}
+     * If you want to remove multiple edges then call {@link #deleteEdges(Collection)}
      *
      * @param edge edge to delete
      */
@@ -410,7 +438,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
      *
      * @param edges list of edges
      */
-    public void deleteEdges(List<TEdge> edges) {
+    public void deleteEdges(Collection<TEdge> edges) {
         for (TEdge edge : edges) {
             currentData.getEdges().remove(edge.getId());
         }
@@ -507,9 +535,43 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
                     }
                 })
         );
+
+    }
+    /////// Templates
+    private final Map<String, TNode> templates = new HashMap<>();
+
+    public Map<String, TNode> getTemplates() {
+        return templates;
+    }
+
+    public void addNewTemplate() {
+        try {
+            TNode template = nodeClass.getDeclaredConstructor().newInstance();
+            template.setLabel("New template "+ templates.size());
+            template.setType(NodeType.COMPONENT_TYPE);
+            addTemplate(template);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+    }
+    public void addTemplate(TNode component){
+        templates.put(component.getId(),component);
+        getElement().callJsFunction("confirmAddTemplate", component.toJson());
     }
 
 
+    public void updateTemplate(TNode component){
+        templates.put(component.getId(),component);
+        getElement().callJsFunction("confirmUpdateTemplate", component.toJson());
+    }
+
+
+    public void deleteTemplate(TNode component){
+        templates.remove(component.getId());
+        getElement().callJsFunction("confirmDeleteTemplate", component.getId());
+    }
+
+    ///// Templates
     /**
      * Check if nodes are linked to an external node then block the process if
      *
@@ -558,7 +620,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
                 try {
                     TNode component = nodeClass.getDeclaredConstructor().newInstance();
                     component.setLabel("New component");
-                    component.setType(NetworkNode.COMPONENT_TYPE);
+                    component.setType(NodeType.COMPONENT_TYPE);
                     // create a component as the same position of the 1st node
                     component.setX(networkNodes.get(0).getX());
                     component.setY(networkNodes.get(0).getY());
@@ -567,10 +629,10 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
                     boolean hasOutput = false;
                     for (TNode networkNode : networkNodes) {
                         component.getNodes().put(networkNode.getId(),networkNode);
-                        if (TNode.INPUT_TYPE.equals(networkNode.getType())){
+                        if (NodeType.INPUT_TYPE.equals(networkNode.getType())){
                             hasInput = true;
                         }
-                        if (TNode.OUTPUT_TYPE.equals(networkNode.getType())){
+                        if (NodeType.OUTPUT_TYPE.equals(networkNode.getType())){
                             hasOutput = true;
                         }
                     }
@@ -584,7 +646,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
                     if (!hasInput) {
                         TNode inputNode = nodeClass.getDeclaredConstructor().newInstance();
                         inputNode.setLabel("input");
-                        inputNode.setType(NetworkNode.INPUT_TYPE);
+                        inputNode.setType(NodeType.INPUT_TYPE);
                         inputNode.setX(-250);
                         component.getNodes().put(inputNode.getId(),inputNode);
                     }
@@ -592,7 +654,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
                     if (!hasOutput) {
                         TNode outputNode = nodeClass.getDeclaredConstructor().newInstance();
                         outputNode.setLabel("output");
-                        outputNode.setType(NetworkNode.OUTPUT_TYPE);
+                        outputNode.setType(NodeType.OUTPUT_TYPE);
                         component.getNodes().put(outputNode.getId(),outputNode);
                     }
 
@@ -605,6 +667,20 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
 
         }
     }
+    /// VISIBILITY
+
+	public void setTemplatePanelVisible(boolean visible) {
+    	getElement().executeJs(visible?"showTemplatePanel":"hideTemplatePanel");
+	}
+
+	public void setRightPanelMini(boolean mini) {
+		getElement().executeJs(mini?"closeRightPanel":"openRightPanel");
+	}
+
+	public void setLeftPanelMini(boolean mini) {
+		getElement().executeJs(mini?"closeLeftPanel":"openLeftPanel");
+	}
+	/// END VISIBILITY
 
     // ALL THE LISTENERS
 
@@ -679,5 +755,20 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
     public Registration addNetworkAfterNewEdgesListener(ComponentEventListener<NetworkEvent.NetworkAfterNewEdgesEvent<TEdge>> listener) {
         afterNewEdgesListener = listener;
         return addListener(NetworkEvent.NetworkAfterNewEdgesEvent.class, (ComponentEventListener) listener);
+    }
+
+
+	/**
+	 * Add an action when the user click on edit template
+	 * The button is not shown if no listener is attached
+	 *
+	 * @param listener the listener to add, not <code>null</code>
+	 * @return a handle that can be used for removing the listener
+	 */
+	@SuppressWarnings("unchecked")
+    public Registration addNetworkUpdateTemplateListener(ComponentEventListener<NetworkEvent.NetworkUpdateTemplateEvent<TNode,TEdge>> listener) {
+    	// show edit button
+        getElement().callJsFunction("showEditTemplateButton");
+        return addListener(NetworkEvent.NetworkUpdateTemplateEvent.class, (ComponentEventListener) listener);
     }
 }

@@ -21,6 +21,7 @@ import com.vaadin.flow.component.JsonSerializable;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,9 +34,65 @@ import java.util.UUID;
  */
 public interface NetworkNode<TNode extends NetworkNode, TEdge> extends JsonSerializable {
 
-    String INPUT_TYPE = "input";
-    String OUTPUT_TYPE = "output";
-    String COMPONENT_TYPE = "component";
+    public enum ComponentColor{
+        RED(0),
+        ORANGE(1),
+        YELLOW(2),
+        GREEN(3),
+        DARK_GREEN(4),
+        BLUE(5),
+        PURPLE(6),
+        VIOLET(7),
+        BROWN(8);
+
+        private final int value;
+
+        private static Map<Integer,ComponentColor> map = new HashMap<>();
+
+        ComponentColor(final int newValue) {
+            value = newValue;
+        }
+
+        public int getValue() { return value; }
+
+        static {
+            for (ComponentColor componentColor : ComponentColor.values()) {
+                map.put(componentColor.value, componentColor);
+            }
+        }
+
+        public static ComponentColor valueOf(int componentColor) {
+            return map.get(componentColor);
+        }
+    }
+
+
+    public enum NodeType{
+        INPUT_TYPE("input"),
+        OUTPUT_TYPE("output"),
+        COMPONENT_TYPE("component");
+
+        private static Map<String,NodeType> map = new HashMap<>();
+        private final String value;
+
+        NodeType(final String newValue) {
+            value = newValue;
+        }
+
+        public String getValue() { return value; }
+        static {
+            for (NodeType nodeType : NodeType.values()) {
+                map.put(nodeType.value, nodeType);
+            }
+        }
+
+        public static NodeType fromString(String nodeType) {
+            if (!map.containsKey(nodeType)){
+                return null;
+            }
+            return map.get(nodeType);
+        }
+    }
 
     String getId();
 
@@ -52,9 +109,13 @@ public interface NetworkNode<TNode extends NetworkNode, TEdge> extends JsonSeria
 
     void setY(double y);
 
-    String getType();
+    NodeType getType();
 
-    void setType(String type);
+    void setType(NodeType type);
+
+    ComponentColor getComponentColor();
+
+    void setComponentColor(ComponentColor type);
 
     Map<String,TNode> getNodes();
 
@@ -73,7 +134,10 @@ public interface NetworkNode<TNode extends NetworkNode, TEdge> extends JsonSeria
         obj.put("x",getX());
         obj.put("y",getY());
         if (getType() != null) {
-            obj.put("type", getType());
+            obj.put("type", getType().getValue());
+        }
+        if (getComponentColor() != null) {
+            obj.put("componentColor", getComponentColor().getValue());
         }
         return obj;
     }
@@ -86,7 +150,10 @@ public interface NetworkNode<TNode extends NetworkNode, TEdge> extends JsonSeria
         setX(value.getNumber("x"));
         setY(value.getNumber("y"));
         if (value.hasKey("type")) {
-            setType(value.getString("type"));
+            setType(NodeType.fromString(value.getString("type")));
+        }
+        if (value.hasKey("componentColor")) {
+            setComponentColor(ComponentColor.valueOf((int) value.getNumber("componentColor")));
         }
         return this;
     }

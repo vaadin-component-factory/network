@@ -1,19 +1,18 @@
 package com.vaadin.componentfactory.demo;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.vaadin.componentfactory.Network;
 import com.vaadin.componentfactory.demo.data.CustomNetworkEdge;
 import com.vaadin.componentfactory.demo.data.CustomNetworkNode;
 import com.vaadin.componentfactory.model.NetworkEdge;
-import com.vaadin.componentfactory.model.NetworkNode;
+import com.vaadin.componentfactory.model.NetworkNode.NodeType;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Route("listener")
 public class ListenerExampleView extends VerticalLayout {
@@ -32,7 +31,7 @@ public class ListenerExampleView extends VerticalLayout {
         node.setLabel("Node 1");
         node.setX(-150);
         node.setY(-80);
-        node.setType(NetworkNode.INPUT_TYPE);
+        node.setType(NodeType.INPUT_TYPE);
         network.addNode(node);
 
 
@@ -53,7 +52,7 @@ public class ListenerExampleView extends VerticalLayout {
         ncomponent.setLabel("Component");
         ncomponent.setX(0);
         ncomponent.setY(0);
-        ncomponent.setType(NetworkNode.COMPONENT_TYPE);
+        ncomponent.setType(NodeType.COMPONENT_TYPE);
 
 
         CustomNetworkNode node4 = new CustomNetworkNode();
@@ -66,14 +65,14 @@ public class ListenerExampleView extends VerticalLayout {
         nodeInput.setLabel("My input node");
         nodeInput.setX(0);
         nodeInput.setY(0);
-        nodeInput.setType(NetworkNode.INPUT_TYPE);
+        nodeInput.setType(NodeType.INPUT_TYPE);
         ncomponent.getNodes().put(nodeInput.getId(),nodeInput);
 
         CustomNetworkNode nodeOutput = new CustomNetworkNode();
         nodeOutput.setLabel("My output node");
         nodeOutput.setX(50);
         nodeOutput.setY(0);
-        nodeOutput.setType(NetworkNode.OUTPUT_TYPE);
+        nodeOutput.setType(NodeType.OUTPUT_TYPE);
         ncomponent.getNodes().put(nodeOutput.getId(),nodeOutput);
 
         network.addNode(ncomponent);
@@ -179,7 +178,42 @@ public class ListenerExampleView extends VerticalLayout {
             System.out.println("edge list "+ network.getEdges());
             Notification.show("edges "+ network.getEdges());
         });
-        add(new HorizontalLayout(addEdgesButton, checkAllButton,checkNodesListButton, checkEdgesListButton));
+        Button addComponentInCustom = new Button("addCustom", e -> addCustomComponentAction());
+        add(new HorizontalLayout(addEdgesButton, checkAllButton,checkNodesListButton, checkEdgesListButton, addComponentInCustom));
+    }
+
+    private void addCustomComponentAction() {
+        {
+
+            CustomNetworkNode ncomponent = new CustomNetworkNode();
+
+            ncomponent.setLabel("Custom Component");
+            ncomponent.setX(0);
+            ncomponent.setY(0);
+            ncomponent.setType(NodeType.COMPONENT_TYPE);
+
+
+            CustomNetworkNode node4 = new CustomNetworkNode();
+            node4.setLabel("Node 4");
+            node4.setX(-50);
+            node4.setY(0);
+            ncomponent.getNodes().put(node4.getId(),node4);
+
+            CustomNetworkNode nodeInput = new CustomNetworkNode();
+            nodeInput.setLabel("My input node");
+            nodeInput.setX(0);
+            nodeInput.setY(0);
+            nodeInput.setType(NodeType.INPUT_TYPE);
+            ncomponent.getNodes().put(nodeInput.getId(),nodeInput);
+
+            CustomNetworkNode nodeOutput = new CustomNetworkNode();
+            nodeOutput.setLabel("My output node");
+            nodeOutput.setX(50);
+            nodeOutput.setY(0);
+            nodeOutput.setType(NodeType.OUTPUT_TYPE);
+            ncomponent.getNodes().put(nodeOutput.getId(),nodeOutput);
+            network.addTemplate(ncomponent);
+        }
     }
 
     /**

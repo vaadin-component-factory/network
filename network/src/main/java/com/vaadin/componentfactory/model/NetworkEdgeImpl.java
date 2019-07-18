@@ -83,22 +83,13 @@ public class NetworkEdgeImpl implements NetworkEdge {
 
     @Override
     public JsonObject toJson() {
-        JsonObject obj = Json.createObject();
-        if (getId() != null) {
-            obj.put("id", getId());
-        }
-        obj.put("from",getFrom());
-        obj.put("to",getTo());
+        JsonObject obj = NetworkEdge.super.toJson();
         return obj;
     }
 
     @Override
     public JsonSerializable readJson(JsonObject value) {
-        if (value.hasKey("id")) {
-            setId(value.getString("id"));
-        }
-        setFrom(value.getString("from"));
-        setTo(value.getString("to"));
+        NetworkEdge.super.readJson(value);
         return this;
     }
 

@@ -34,7 +34,8 @@ public class NetworkNodeImpl implements NetworkNode<NetworkNodeImpl,NetworkEdgeI
     private String label;
     private double x;
     private double y;
-    private String type;
+    private NodeType type;
+    private ComponentColor componentColor;
 
 
     public NetworkNodeImpl() {
@@ -76,12 +77,22 @@ public class NetworkNodeImpl implements NetworkNode<NetworkNodeImpl,NetworkEdgeI
         this.y = y;
     }
 
-    public String getType() {
+    public NodeType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(NodeType type) {
         this.type = type;
+    }
+
+    @Override
+    public ComponentColor getComponentColor() {
+        return componentColor;
+    }
+
+    @Override
+    public void setComponentColor(ComponentColor componentColor) {
+        this.componentColor = componentColor;
     }
 
     @Override
@@ -128,16 +139,7 @@ public class NetworkNodeImpl implements NetworkNode<NetworkNodeImpl,NetworkEdgeI
 
     @Override
     public JsonObject toJson() {
-        JsonObject obj = Json.createObject();
-        obj.put("id", getId());
-        if (getLabel() != null) {
-            obj.put("label", getLabel());
-        }
-        obj.put("x",getX());
-        obj.put("y",getY());
-        if (getType() != null) {
-            obj.put("type", getType());
-        }
+        JsonObject obj = NetworkNode.super.toJson();
         // put nodes and edges
         obj.put("nodes", NetworkConverter.convertNetworkNodeListToJsonArray(getNodes().values()));
         obj.put("edges", NetworkConverter.convertNetworkEdgeListToJsonArray(getEdges().values()));
@@ -146,21 +148,7 @@ public class NetworkNodeImpl implements NetworkNode<NetworkNodeImpl,NetworkEdgeI
 
     @Override
     public JsonSerializable readJson(JsonObject value) {
-        if (value.hasKey("id")) {
-            setId(value.getString("id"));
-        }
-        if (value.hasKey("label")) {
-            setLabel(value.getString("label"));
-        }
-        if (value.hasKey("x")) {
-            setX(value.getNumber("x"));
-        }
-        if (value.hasKey("y")) {
-            setY(value.getNumber("y"));
-        }
-        if (value.hasKey("type")) {
-            setType(value.getString("type"));
-        }
+        NetworkNode.super.readJson(value);
         if (value.hasKey("nodes")) {
             setNodes(NetworkConverter.convertJsonToNodeMap(value.getArray("nodes"), NetworkNodeImpl.class));
         }

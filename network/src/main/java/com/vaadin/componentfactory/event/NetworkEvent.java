@@ -482,6 +482,65 @@ public class NetworkEvent {
         }
     }
 
+
+
+    @DomEvent("vcf-network-new-template")
+    public static class NetworkNewTemplateEvent extends ComponentEvent<Network> {
+
+        public NetworkNewTemplateEvent(Network source, boolean fromClient,
+                                          @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
+            super(source, fromClient);
+        }
+    }
+
+
+    @DomEvent("vcf-network-update-template")
+    public static class NetworkUpdateTemplateEvent<TNode extends NetworkNode<TNode, TEdge>, TEdge extends NetworkEdge> extends ComponentEvent<Network> {
+
+        private TNode template;
+
+        public NetworkUpdateTemplateEvent(Network<TNode, TEdge> source, boolean fromClient,
+                                          @EventData("event.detail.id") String templateId,
+                                          @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
+            super(source, fromClient);
+            if (source.getTemplates().containsKey(templateId)){
+                template = source.getTemplates().get(templateId);
+            }
+        }
+
+        public TNode getTemplate() {
+            return template;
+        }
+
+        public void setTemplate(TNode template) {
+            this.template = template;
+        }
+    }
+
+    @DomEvent("vcf-network-delete-template")
+    public static class NetworkDeleteTemplateEvent<TNode extends NetworkNode<TNode, TEdge>, TEdge extends NetworkEdge> extends ComponentEvent<Network> {
+
+        private TNode template;
+
+        public NetworkDeleteTemplateEvent(Network<TNode, TEdge> source, boolean fromClient,
+                                          @EventData("event.detail.id") String templateId,
+                                          @EventData(EVENT_PREVENT_DEFAULT_JS) Object ignored) {
+            super(source, fromClient);
+            if (source.getTemplates().containsKey(templateId)){
+                template = source.getTemplates().get(templateId);
+            }
+        }
+
+        public TNode getTemplate() {
+            return template;
+        }
+
+        public void setTemplate(TNode template) {
+            this.template = template;
+        }
+    }
+
+
     @FunctionalInterface
     public interface ConfirmEventListener<T extends ComponentEvent<?>>
             extends EventListener, Serializable {
