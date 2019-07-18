@@ -47,7 +47,11 @@ public class TemplateEditorView extends VerticalLayout {
 
 
         templateNetwork = new Network<>(NetworkNodeImpl.class,NetworkEdgeImpl.class, template);
-        Button closeButton = new Button("Close", e -> closeTemplateEditor());
+
+        templateNetwork.setTemplatePanelVisible(false);
+        templateNetwork.setLeftPanelMini(true);
+        templateNetwork.setRightPanelMini(true);
+        Button closeButton = new Button("Save and close", e -> closeTemplateEditor());
         networkContainer.setVisible(false);
         templateNetwork.setSizeFull();
         templateNetworkContainer.setVisible(true);

@@ -25,6 +25,8 @@ public class SimpleExampleView extends VerticalLayout {
         });
         add(network, checkNodesListButton, checkEdgesListButton);
         network.addNodeEditor(new NetworkNodeEditorImpl());
+
+        network.setTemplatePanelVisible(false);
     }
 
 }

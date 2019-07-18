@@ -670,15 +670,15 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
     /// VISIBILITY
 
 	public void setTemplatePanelVisible(boolean visible) {
-    	getElement().executeJs(visible?"showTemplatePanel":"hideTemplatePanel");
+    	getElement().callJsFunction(visible?"showTemplatePanel":"hideTemplatePanel");
 	}
 
 	public void setRightPanelMini(boolean mini) {
-		getElement().executeJs(mini?"closeRightPanel":"openRightPanel");
+		getElement().callJsFunction(mini?"closeRightPanel":"openRightPanel");
 	}
 
 	public void setLeftPanelMini(boolean mini) {
-		getElement().executeJs(mini?"closeLeftPanel":"openLeftPanel");
+		getElement().callJsFunction(mini?"closeLeftPanel":"openLeftPanel");
 	}
 	/// END VISIBILITY
 
