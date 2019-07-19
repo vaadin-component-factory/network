@@ -87,6 +87,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
     private ComponentEventListener<NetworkEvent.NetworkAfterDeleteEdgesEvent> afterDeleteEdgesListener;
     private ComponentEventListener<NetworkEvent.NetworkAfterNewEdgesEvent<TEdge>> afterNewEdgesListener;
 
+    private final Map<String, TNode> templates = new HashMap<>();
 
     public Network(Class<TNode> nodeClass, Class<TEdge> edgeClass) {
         this.nodeClass = nodeClass;
@@ -109,6 +110,9 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         this.currentData = rootData;
         networkConverter = new NetworkConverter<>(this.nodeClass, this.edgeClass);
         registerHandlers();
+
+        getElement().callJsFunction("confirmAddNodes", NetworkConverter.convertNetworkNodeListToJsonArray(rootData.getNodes().values()));
+        getElement().callJsFunction("confirmAddEdges", NetworkConverter.convertNetworkEdgeListToJsonArray(rootData.getEdges().values()));
     }
 
     public NetworkConverter<TNode, TEdge> getNetworkConverter() {
@@ -540,8 +544,6 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
 
     }
     /////// Templates
-    private final Map<String, TNode> templates = new HashMap<>();
-
     public Map<String, TNode> getTemplates() {
         return templates;
     }
