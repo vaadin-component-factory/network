@@ -5,6 +5,7 @@ import com.vaadin.componentfactory.model.NetworkEdgeImpl;
 import com.vaadin.componentfactory.model.NetworkNode;
 import com.vaadin.componentfactory.model.NetworkNodeImpl;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -40,7 +41,9 @@ public class TemplateEditorView extends VerticalLayout {
     private Network<NetworkNodeImpl, NetworkEdgeImpl> templateNetwork;
 
     private void openTemplateEditor(NetworkNodeImpl template) {
-      /*  Dialog dialog = new Dialog();
+      /* Test case for the component in a dialog
+         Does not work yet.
+        Dialog dialog = new Dialog();
         Network<NetworkNodeImpl, NetworkEdgeImpl> templateNetwork = new Network<>(NetworkNodeImpl.class,NetworkEdgeImpl.class);
         dialog.add(templateNetwork);
         dialog.open();*/
@@ -49,8 +52,8 @@ public class TemplateEditorView extends VerticalLayout {
         templateNetwork = new Network<>(NetworkNodeImpl.class,NetworkEdgeImpl.class, template);
 
         templateNetwork.setTemplatePanelVisible(false);
-        templateNetwork.setLeftPanelMini(true);
-        templateNetwork.setRightPanelMini(true);
+        templateNetwork.setLeftPanelOpened(false);
+        templateNetwork.setRightPanelOpened(false);
         Button closeButton = new Button("Save and close", e -> closeTemplateEditor());
         networkContainer.setVisible(false);
         templateNetwork.setSizeFull();
@@ -61,8 +64,6 @@ public class TemplateEditorView extends VerticalLayout {
         templateNetworkContainer.add(closeButton);
         // bind
         labelField.setValue(template.getLabel());
-        templateNetwork.addNodes(template.getNodes().values());
-        templateNetwork.addEdges(template.getEdges().values());
     }
 
     private void closeTemplateEditor() {

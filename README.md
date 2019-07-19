@@ -79,6 +79,13 @@ To build and install the project into the local repository run
 To run demo go to `network-demo/` subfolder and run `mvn jetty:run`.
 After server startup, you'll be able find demo at [http://localhost:8080/network](http://localhost:8080/network)
 
+You can also try this link  [http://localhost:8080/template](http://localhost:8080/template)
+
+
+## Known limitations
+
+* This component does not work in a vaadin dialog.
+* This component does not work on IE11 and Edge.
 
 # Vaadin Prime
 This component is available in Vaadin Prime subscription. It is still open source, but you need to have a valid CVAL license in order to use it. Read more at: https://vaadin.com/pricing

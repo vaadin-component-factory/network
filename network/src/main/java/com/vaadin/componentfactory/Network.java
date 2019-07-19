@@ -55,6 +55,8 @@ import elemental.json.JsonObject;
  *
  * @param <TNode> Node type
  * @param <TEdge> Edge type
+ *
+ * @author Vaadin Ltd
  */
 @Tag("vcf-network")
 @NpmPackage(value="@vaadin-component-factory/vcf-network", version="1.0.0-alpha.4")
@@ -93,7 +95,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
             rootData = nodeClass.getDeclaredConstructor().newInstance();
             currentData = rootData;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Unable to instantiate new bean", e);
         }
         networkConverter = new NetworkConverter<>(this.nodeClass, this.edgeClass);
         registerHandlers();
@@ -551,7 +553,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
             template.setType(NodeType.COMPONENT_TYPE);
             addTemplate(template);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Unable to instantiate new bean", e);
         }
     }
     public void addTemplate(TNode component){
@@ -661,7 +663,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
                     addNode(component);
 
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException("Unable to instantiate new bean", e);
                 }
             }
 
@@ -669,16 +671,34 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
     }
     /// VISIBILITY
 
+    /**
+     * Show or hide the template panel
+     * Default visible
+     *
+     * @param visible true to show or false to hide
+     */
 	public void setTemplatePanelVisible(boolean visible) {
     	getElement().callJsFunction(visible?"showTemplatePanel":"hideTemplatePanel");
 	}
 
-	public void setRightPanelMini(boolean mini) {
-		getElement().callJsFunction(mini?"closeRightPanel":"openRightPanel");
+    /**
+     * Open or close the right panel
+     * Default opened
+     *
+     * @param opened true to open or false to close
+     */
+	public void setRightPanelOpened(boolean opened) {
+		getElement().callJsFunction(opened?"openRightPanel":"closeRightPanel");
 	}
 
-	public void setLeftPanelMini(boolean mini) {
-		getElement().callJsFunction(mini?"closeLeftPanel":"openLeftPanel");
+    /**
+     * Open or close the left panel
+     * Default opened
+     *
+     * @param opened true to open or false to close
+     */
+	public void setLeftPanelOpened(boolean opened) {
+		getElement().callJsFunction(opened?"openLeftPanel":"closeLeftPanel");
 	}
 	/// END VISIBILITY
 

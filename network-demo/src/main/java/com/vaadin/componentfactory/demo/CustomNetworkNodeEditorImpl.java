@@ -11,7 +11,14 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 
-
+/**
+ * Editor for CustomNetworkNode bean
+ *
+ * Example to show how to extend the default editor:
+ * Add a field
+ * Change label textfield to a textarea
+ *
+ */
 public class CustomNetworkNodeEditorImpl extends FormLayout implements NetworkNodeEditor<CustomNetworkNode, CustomNetworkEdge> {
 
     private CustomNetworkNode node;
