@@ -32,6 +32,7 @@ import com.vaadin.componentfactory.editor.NetworkNodeEditor;
 import com.vaadin.componentfactory.event.NetworkEvent;
 import com.vaadin.componentfactory.model.NetworkEdge;
 import com.vaadin.componentfactory.model.NetworkNode;
+import com.vaadin.componentfactory.model.NetworkNode.ComponentColor;
 import com.vaadin.componentfactory.model.NetworkNode.NodeType;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -544,35 +545,60 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
 
     }
     /////// Templates
+
+    /**
+     *
+     * @return list of template
+     */
     public Map<String, TNode> getTemplates() {
         return templates;
     }
 
+    /**
+     * This action is called when a user click on "+ New template"
+     * You can overrides it if you want different default values
+     */
     public void addNewTemplate() {
         try {
             TNode template = nodeClass.getDeclaredConstructor().newInstance();
             template.setLabel("New template "+ templates.size());
             template.setType(NodeType.COMPONENT_TYPE);
+            template.setComponentColor(ComponentColor.BLUE);
             addTemplate(template);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException("Unable to instantiate new bean", e);
         }
     }
-    public void addTemplate(TNode component){
-        templates.put(component.getId(),component);
-        getElement().callJsFunction("confirmAddTemplate", component.toJson());
+
+    /**
+     * Add a template in the list
+     * template.id should be unique in the list
+     * @param template template to add
+     */
+    public void addTemplate(TNode template){
+        templates.put(template.getId(),template);
+        getElement().callJsFunction("confirmAddTemplate", template.toJson());
+    }
+
+    /**
+     * Edit a template in the list
+     *
+     * @param template template to edit
+     */
+    public void updateTemplate(TNode template){
+        templates.put(template.getId(),template);
+        getElement().callJsFunction("confirmUpdateTemplate", template.toJson());
     }
 
 
-    public void updateTemplate(TNode component){
-        templates.put(component.getId(),component);
-        getElement().callJsFunction("confirmUpdateTemplate", component.toJson());
-    }
-
-
-    public void deleteTemplate(TNode component){
-        templates.remove(component.getId());
-        getElement().callJsFunction("confirmDeleteTemplate", component.getId());
+    /**
+     * Delete the template with the same id
+     *
+     * @param template template to delete
+     */
+    public void deleteTemplate(TNode template){
+        templates.remove(template.getId());
+        getElement().callJsFunction("confirmDeleteTemplate", template.getId());
     }
 
     ///// Templates
@@ -706,31 +732,67 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
 
     // ALL THE LISTENERS
 
+    /**
+     * Adds a delete node listener to this component.
+     *
+     * @param listener the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
     public Registration addDeleteNodesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkDeleteNodesEvent> listener) {
         deleteNodesListeners.add(listener);
         return () -> deleteNodesListeners.remove(listener);
     }
 
+    /**
+     * Adds a delete edge listener to this component.
+     *
+     * @param listener the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
     public Registration addDeleteEdgesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkDeleteEdgesEvent> listener) {
         deleteEdgesListeners.add(listener);
         return () -> deleteEdgesListeners.remove(listener);
     }
 
+    /**
+     * Adds a new node listener to this component.
+     *
+     * @param listener the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
     public Registration addNewNodesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewNodesEvent<TNode, TEdge>> listener) {
         newNodesListeners.add(listener);
         return () -> newNodesListeners.remove(listener);
     }
 
+    /**
+     * Adds a new edge listener to this component.
+     *
+     * @param listener the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
     public Registration addNewEdgesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkNewEdgesEvent<TEdge>> listener) {
         newEdgesListeners.add(listener);
         return () -> newEdgesListeners.remove(listener);
     }
 
+    /**
+     * Adds a update node listener to this component.
+     *
+     * @param listener the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
     public Registration addUpdateNodesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateNodesEvent<TNode, TEdge>> listener) {
         updateNodesListeners.add(listener);
         return () -> updateNodesListeners.remove(listener);
     }
 
+    /**
+     * Adds a update edge listener to this component.
+     *
+     * @param listener the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
     public Registration addUpdateEdgesListener(NetworkEvent.ConfirmEventListener<NetworkEvent.NetworkUpdateEdgesEvent<TEdge>> listener) {
         updateEdgesListeners.add(listener);
         return () -> updateEdgesListeners.remove(listener);
