@@ -60,7 +60,7 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  */
 @Tag("vcf-network")
-@NpmPackage(value="@vaadin-component-factory/vcf-network", version="1.0.0-beta.1")
+@NpmPackage(value="@vaadin-component-factory/vcf-network", version="1.0.0-beta.2")
 @JsModule("@vaadin-component-factory/vcf-network/src/vcf-network.js")
 public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends NetworkEdge> extends Component implements HasSize, HasTheme {
 
