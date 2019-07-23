@@ -77,7 +77,7 @@ To build and install the project into the local repository run
 
 ## Demo
 To run demo go to `network-demo/` subfolder and run `mvn jetty:run`.
-After server startup, you'll be able find demo at [http://localhost:8080/network](http://localhost:8080/network)
+After server startup, you'll be able find demo at [http://localhost:8080/](http://localhost:8080/)
 
 You can also try this link  [http://localhost:8080/template](http://localhost:8080/template)
 
