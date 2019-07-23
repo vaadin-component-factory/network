@@ -2,7 +2,7 @@
 Network is Java API for [<vcf-network>](https://github.com/vaadin-component-factory/vcf-network) web component for Vaadin 14+ in NPM Mode. 
 It provides an easy way to display network on web pages.
 
-[Live Demo ↗](https://incubator.app.fi/network-demo/network)
+[Live Demo ↗](https://incubator.app.fi/network-demo/)
 
 [<img src="https://raw.githubusercontent.com/vaadin-component-factory/network/master/screenshot.png" alt="Screenshot of network">](https://vaadin.com/directory/components/network)
 
