@@ -3,7 +3,7 @@
 
     <groupId>org.vaadin.componentfactory</groupId>
     <artifactId>network-root</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>pom</packaging>
     <name>Network Root</name>
     <description>Integration of vcf-network for Vaadin platform 14+</description>

@@ -21,7 +21,7 @@
         <jetty.version>9.4.15.v20190215</jetty.version>
         <jetty.plugin.version>9.4.15.v20190215</jetty.plugin.version>
         <failOnMissingWebXml>false</failOnMissingWebXml>
-        <vaadin.version>14.0.0.rc6</vaadin.version>
+        <vaadin.version>14.0.1</vaadin.version>
         <flow-demo.version>2.0.2</flow-demo.version>
         <testbench.version>6.0.1</testbench.version>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -59,7 +59,7 @@
         <dependency>
             <groupId>com.vaadin.componentfactory</groupId>
             <artifactId>network</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.0</version>
         </dependency>
         <!-- Added to provide logging output as Flow uses -->
         <!-- the unbound SLF4J no-operation (NOP) logger implementation -->

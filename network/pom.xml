@@ -5,7 +5,7 @@
 
     <groupId>com.vaadin.componentfactory</groupId>
     <artifactId>network</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 
     <name>Network Component</name>
 
@@ -19,7 +19,7 @@
 
     <properties>
         <jetty.plugin.version>9.4.15.v20190215</jetty.plugin.version>
-        <vaadin.version>14.0.0.rc6</vaadin.version>
+        <vaadin.version>14.0.1</vaadin.version>
 
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>

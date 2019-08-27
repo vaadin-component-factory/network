@@ -11,6 +11,7 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.demo.Card;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -96,7 +97,8 @@ public class NetworkView extends DemoView {
         Div message = createMessageDiv("template-editor-network-message");
         Div description = new Div();
         description.setText("Create a new template then edit it");
-        addCard("Network with template editor", new TemplateEditorView(), description, message);
+        Card card = addCard("Network with template editor", new TemplateEditorView(), description, message);
+        card.setHeight("80vh");
     }
 
 
@@ -139,7 +141,7 @@ public class NetworkView extends DemoView {
             templateNetwork.setRightPanelOpened(false);
             Button closeButton = new Button("Save and close", e -> closeTemplateEditor());
             networkContainer.setVisible(false);
-            templateNetwork.setSizeFull();
+            templateNetwork.setWidthFull();
             templateNetworkContainer.setVisible(true);
             templateNetworkContainer.add(new H3("Edit template"));
             labelField = new TextField("Name of your template");

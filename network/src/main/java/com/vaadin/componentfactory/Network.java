@@ -17,19 +17,10 @@ package com.vaadin.componentfactory;
  * #L%
  */
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.vaadin.componentfactory.converter.NetworkConverter;
 import com.vaadin.componentfactory.editor.NetworkNodeEditor;
 import com.vaadin.componentfactory.event.NetworkEvent;
+import com.vaadin.componentfactory.exception.NetworkException;
 import com.vaadin.componentfactory.model.NetworkEdge;
 import com.vaadin.componentfactory.model.NetworkNode;
 import com.vaadin.componentfactory.model.NetworkNode.ComponentColor;
@@ -46,9 +37,25 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.shared.Registration;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Network main class.
@@ -60,7 +67,7 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  */
 @Tag("vcf-network")
-@NpmPackage(value="@vaadin-component-factory/vcf-network", version="1.0.0-beta.2")
+@NpmPackage(value="@vaadin-component-factory/vcf-network", version="1.1.6")
 @JsModule("@vaadin-component-factory/vcf-network/src/vcf-network.js")
 public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends NetworkEdge> extends Component implements HasSize, HasTheme {
 
@@ -112,8 +119,48 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         networkConverter = new NetworkConverter<>(this.nodeClass, this.edgeClass);
         registerHandlers();
 
-        getElement().callJsFunction("confirmAddNodes", NetworkConverter.convertNetworkNodeListToJsonArray(rootData.getNodes().values()));
-        getElement().callJsFunction("confirmAddEdges", NetworkConverter.convertNetworkEdgeListToJsonArray(rootData.getEdges().values()));
+        getElement().callJsFunction("setRootData", rootData.toJson());
+    }
+
+    public Network(Class<TNode> nodeClass, Class<TEdge> edgeClass, String rootDataJson) throws NetworkException {
+        this.nodeClass = nodeClass;
+        this.edgeClass = edgeClass;
+        networkConverter = new NetworkConverter<>(this.nodeClass, this.edgeClass);
+        try {
+            JsonObject jsonObject = Json.parse(rootDataJson);
+            rootData = nodeClass.getDeclaredConstructor().newInstance();
+            if (jsonObject.hasKey("nodes")) {
+                rootData.setNodes(NetworkConverter.convertJsonToNodeMap(jsonObject.getArray("nodes"), nodeClass));
+            }
+            if (jsonObject.hasKey("edges")) {
+                rootData.setEdges(NetworkConverter.convertJsonToEdgeMap(jsonObject.getArray("edges"), edgeClass));
+            }
+            currentData = rootData;
+        } catch (ClassCastException cce) {
+            throw new NetworkException("Unable to parse json file, please check your file", cce);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new NetworkException("Unable to instantiate new bean", e);
+        }
+        registerHandlers();
+        getElement().callJsFunction("setRootData", rootData.toJson());
+       // getElement().callJsFunction("confirmAddNodes", NetworkConverter.convertNetworkNodeListToJsonArray(rootData.getNodes().values()));
+       // getElement().callJsFunction("confirmAddEdges", NetworkConverter.convertNetworkEdgeListToJsonArray(rootData.getEdges().values()));
+    }
+
+    public Network(Class<TNode> nodeClass, Class<TEdge> edgeClass, InputStream rootDataJson) throws IOException, NetworkException {
+        this(nodeClass,edgeClass, read(rootDataJson));
+    }
+
+    private static String read(InputStream input) throws IOException {
+        StringBuilder textBuilder = new StringBuilder();
+        try (Reader reader = new BufferedReader(new InputStreamReader
+                (input, Charset.forName(StandardCharsets.UTF_8.name())))) {
+            int c = 0;
+            while ((c = reader.read()) != -1) {
+                textBuilder.append((char) c);
+            }
+        }
+      return textBuilder.toString();
     }
 
     public NetworkConverter<TNode, TEdge> getNetworkConverter() {
@@ -327,6 +374,25 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         getElement().setProperty("scale", scale);
     }
 
+    /**
+     *
+     * @return the current mode of the network component
+     */
+    @Synchronize(property = "addNodeToggle", value = "add-node-toggle-changed")
+    public boolean isAddNodeToggle() {
+        return getElement().getProperty("addNodeToggle", false);
+    }
+
+    /**
+     * Set the current mode of the network:
+     * - true: When adding a node on click then keep add Mode
+     * - false: When adding a node on click then switch to normal modenn
+     *
+     * @param addModeToggle mode of the network
+     */
+    public void setAddModeToggle(boolean addModeToggle) {
+        getElement().setProperty("addNodeToggle", addModeToggle);
+    }
     /**
      *
      * @return list of nodes

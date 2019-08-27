@@ -4,8 +4,10 @@ import com.vaadin.componentfactory.Network;
 import com.vaadin.componentfactory.model.NetworkEdgeImpl;
 import com.vaadin.componentfactory.model.NetworkNodeImpl;
 import com.vaadin.componentfactory.model.NetworkNode;
+import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
@@ -28,6 +30,7 @@ public class DemoExampleView extends VerticalLayout {
     private NumberField scale = new NumberField("Scale");
 
     private Button setScaleButton = new Button("set scale to ", e -> setScaleAction());
+    private Button toggleModeButton = new Button("Toggle mode ", e -> toggleAction());
 
     // node controls
     private Binder<NetworkNodeImpl> binderNode = new Binder<>(NetworkNodeImpl.class);
@@ -71,7 +74,7 @@ public class DemoExampleView extends VerticalLayout {
         Accordion accordion = new Accordion();
         accordion.setWidthFull();
         add(accordion);
-        HorizontalLayout scaleLayout = new HorizontalLayout(scaleButton,scale, setScaleButton);
+        HorizontalLayout scaleLayout = new HorizontalLayout(scaleButton,scale, setScaleButton, toggleModeButton);
         scaleLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
         accordion.add("Scale",scaleLayout);
         HorizontalLayout selectNodeLayout = new HorizontalLayout(nodeComboBox, selectNodeButton, newNodeButton, refreshComboboxButton, selectAllButton);
@@ -148,4 +151,12 @@ public class DemoExampleView extends VerticalLayout {
         }
     }
 
+    private void toggleAction() {
+        network.setAddModeToggle(!network.isAddNodeToggle());
+        if (network.isAddNodeToggle()) {
+            toggleModeButton.setThemeName(ButtonVariant.LUMO_SUCCESS.getVariantName());
+        } else {
+            toggleModeButton.setThemeName(ButtonVariant.LUMO_ERROR.getVariantName());
+        }
+    }
 }
