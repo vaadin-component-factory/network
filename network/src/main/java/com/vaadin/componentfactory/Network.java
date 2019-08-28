@@ -743,6 +743,7 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
                     TNode component = nodeClass.getDeclaredConstructor().newInstance();
                     component.setLabel("New component");
                     component.setType(NodeType.COMPONENT_TYPE);
+                    component.setComponentColor(ComponentColor.ORANGE);
                     // create a component as the same position of the 1st node
                     component.setX(networkNodes.get(0).getX());
                     component.setY(networkNodes.get(0).getY());
