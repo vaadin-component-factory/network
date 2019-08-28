@@ -133,7 +133,7 @@ public class NetworkConverter<TNode extends NetworkNode<TNode,TEdge>,TEdge exten
                 }
             } else if (value instanceof JsonObject){
                 JsonObject jsonObject = (JsonObject)  value;
-                if (jsonObject.hasKey("id")|| jsonObject.hasKey("x") || jsonObject.hasKey("from")){
+                if (jsonObject.hasKey("id")|| jsonObject.hasKey("x") || jsonObject.hasKey(NetworkEdge.FROM_CLIENT_PROPERTY)){
                     // its an item
                     T node = tClass.getDeclaredConstructor().newInstance();
                     node.readJson(jsonObject);
@@ -221,7 +221,7 @@ public class NetworkConverter<TNode extends NetworkNode<TNode,TEdge>,TEdge exten
                 }
             } else if (value instanceof JsonObject){
                 JsonObject jsonObject = (JsonObject)  value;
-                if (jsonObject.hasKey("from")){
+                if (jsonObject.hasKey(NetworkEdge.FROM_CLIENT_PROPERTY)){
                     // its an item
                     T edge = tClass.getDeclaredConstructor().newInstance();
                     edge.readJson(jsonObject);

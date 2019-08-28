@@ -31,6 +31,8 @@ import java.util.UUID;
  */
 public interface NetworkEdge extends JsonSerializable {
 
+    String FROM_CLIENT_PROPERTY = "modelFrom";
+    String TO_CLIENT_PROPERTY = "modelTo";
 
     String getId();
 
@@ -70,8 +72,8 @@ public interface NetworkEdge extends JsonSerializable {
         if (getId() != null) {
             obj.put("id", getId());
         }
-        obj.put("from",getFrom());
-        obj.put("to",getTo());
+        obj.put(FROM_CLIENT_PROPERTY,getFrom());
+        obj.put(TO_CLIENT_PROPERTY,getTo());
         return obj;
     }
 
@@ -79,8 +81,8 @@ public interface NetworkEdge extends JsonSerializable {
         if (value.hasKey("id")) {
             setId(value.getString("id"));
         }
-        setFrom(value.getString("from"));
-        setTo(value.getString("to"));
+        setFrom(value.getString(FROM_CLIENT_PROPERTY));
+        setTo(value.getString(TO_CLIENT_PROPERTY));
         return this;
     }
 

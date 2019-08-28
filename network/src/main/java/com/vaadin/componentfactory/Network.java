@@ -111,6 +111,13 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
     }
 
 
+    /**
+     * Create a new Network and load your network data
+     *
+     * @param nodeClass Node type
+     * @param edgeClass Edge type
+     * @param rootData network data
+     */
     public Network(Class<TNode> nodeClass, Class<TEdge> edgeClass, TNode rootData) {
         this.nodeClass = nodeClass;
         this.edgeClass = edgeClass;
@@ -122,6 +129,14 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
         getElement().callJsFunction("setRootData", rootData.toJson());
     }
 
+    /**
+     * Create a new Network and load your network data
+     *
+     * @param nodeClass Node type
+     * @param edgeClass Edge type
+     * @param rootDataJson Json in String
+     * @throws NetworkException when the json file if not well formed or is not a network json file
+     */
     public Network(Class<TNode> nodeClass, Class<TEdge> edgeClass, String rootDataJson) throws NetworkException {
         this.nodeClass = nodeClass;
         this.edgeClass = edgeClass;
@@ -147,6 +162,13 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
        // getElement().callJsFunction("confirmAddEdges", NetworkConverter.convertNetworkEdgeListToJsonArray(rootData.getEdges().values()));
     }
 
+    /**
+     * @param nodeClass Node type
+     * @param edgeClass Edge type
+     * @param rootDataJson Stream of the json file
+     * @throws IOException when the file cannot the read
+     * @throws NetworkException when the json file if not well formed or is not a network json file
+     */
     public Network(Class<TNode> nodeClass, Class<TEdge> edgeClass, InputStream rootDataJson) throws IOException, NetworkException {
         this(nodeClass,edgeClass, read(rootDataJson));
     }
@@ -163,6 +185,10 @@ public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends Netw
       return textBuilder.toString();
     }
 
+    /**
+     *
+     * @return network converter
+     */
     public NetworkConverter<TNode, TEdge> getNetworkConverter() {
         return networkConverter;
     }

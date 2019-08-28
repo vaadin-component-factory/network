@@ -2,9 +2,11 @@
 Network is Java API for [<vcf-network>](https://github.com/vaadin-component-factory/vcf-network) web component for Vaadin 14+ in NPM Mode. 
 It provides an easy way to display network on web pages.
 
+You can read the web component documentation to know how to use it: [Documentation of <vcf-network>](https://vaadin.com/directory/component/vaadin-component-factoryvcf-network)
+
 [Live Demo ↗](https://incubator.app.fi/network-demo/network)
 
-[<img src="https://raw.githubusercontent.com/vaadin-component-factory/network/master/screenshot.png" alt="Screenshot of network">](https://vaadin.com/directory/components/network)
+[<img src="https://raw.githubusercontent.com/vaadin-component-factory/network/master/screenshot.png" alt="Screenshot of network">](https://vaadin.com/directory/components/network-component)
 
 
 ## Usage
@@ -48,7 +50,7 @@ network.addNetworkSelectionListener(event -> {
 });
 ```
 
-[<img src="https://raw.githubusercontent.com/vaadin-component-factory/network/master/selection-listener-screenshot.png" alt="Screenshot of network with a listener">](https://vaadin.com/directory/components/network)
+[<img src="https://raw.githubusercontent.com/vaadin-component-factory/network/master/selection-listener-screenshot.png" alt="Screenshot of network with a listener">](https://vaadin.com/directory/components/network-component)
 
 ## Custom editor for Node
 
@@ -61,7 +63,7 @@ addAndExpand(network);
 network.addNodeEditor(new CustomNetworkNodeEditorImpl());
 ```
 
-[<img src="https://raw.githubusercontent.com/vaadin-component-factory/network/master/custom-editor-screenshot.png" alt="Screenshot of network with a custom editor">](https://vaadin.com/directory/components/network)
+[<img src="https://raw.githubusercontent.com/vaadin-component-factory/network/master/custom-editor-screenshot.png" alt="Screenshot of network with a custom editor">](https://vaadin.com/directory/components/network-component)
 
 
 ## Setting up for development:
@@ -79,8 +81,9 @@ To build and install the project into the local repository run
 To run demo go to `network-demo/` subfolder and run `mvn jetty:run`.
 After server startup, you'll be able find demo at [http://localhost:8080/](http://localhost:8080/)
 
-You can also try this link  [http://localhost:8080/template](http://localhost:8080/template)
-
+You can also test:
+ * the template editor here: [http://localhost:8080/template](http://localhost:8080/template)
+ * Import functionality here: [http://localhost:8080/upload](http://localhost:8080/upload)
 
 ## Known limitations
 
