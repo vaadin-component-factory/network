@@ -67,7 +67,7 @@ import java.util.stream.Collectors;
  * @author Vaadin Ltd
  */
 @Tag("vcf-network")
-@NpmPackage(value="@vaadin-component-factory/vcf-network", version="1.1.6")
+@NpmPackage(value="@vaadin-component-factory/vcf-network", version="1.2.0")
 @JsModule("@vaadin-component-factory/vcf-network/src/vcf-network.js")
 public class Network<TNode extends NetworkNode<TNode, TEdge>, TEdge extends NetworkEdge> extends Component implements HasSize, HasTheme {
 
