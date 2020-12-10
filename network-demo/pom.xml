@@ -5,7 +5,7 @@
 
     <groupId>com.vaadin.componentfactory</groupId>
     <artifactId>network-demo</artifactId>
-    <version>1.0.0</version>
+    <version>1.3.0</version>
     <inceptionYear>2019</inceptionYear>
 
     <name>Network Demo</name>
@@ -21,7 +21,7 @@
         <jetty.version>9.4.15.v20190215</jetty.version>
         <jetty.plugin.version>9.4.15.v20190215</jetty.plugin.version>
         <failOnMissingWebXml>false</failOnMissingWebXml>
-        <vaadin.version>14.0.1</vaadin.version>
+        <vaadin.version>14.4.4</vaadin.version>
         <flow-demo.version>2.0.2</flow-demo.version>
         <testbench.version>6.0.1</testbench.version>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -29,6 +29,18 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-bom</artifactId>
+                <type>pom</type>
+                <scope>import</scope>
+                <version>${vaadin.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <repositories>
         <repository>
@@ -59,7 +71,7 @@
         <dependency>
             <groupId>com.vaadin.componentfactory</groupId>
             <artifactId>network</artifactId>
-            <version>1.1.0</version>
+            <version>1.3.0</version>
         </dependency>
         <!-- Added to provide logging output as Flow uses -->
         <!-- the unbound SLF4J no-operation (NOP) logger implementation -->
@@ -104,7 +116,6 @@
                     <execution>
                         <goals>
                             <goal>prepare-frontend</goal>
-                            <goal>build-frontend</goal>
                         </goals>
                         <configuration>
                             <convertHtml>false</convertHtml>
@@ -122,5 +133,38 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>production</id>
+            <properties>
+                <vaadin.productionMode>true</vaadin.productionMode>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>flow-server-production-mode</artifactId>
+                </dependency>
+            </dependencies>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>vaadin-maven-plugin</artifactId>
+                        <version>${vaadin.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>prepare-frontend</goal>
+                                    <goal>build-frontend</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
